@@ -1,0 +1,21 @@
+# Render Blueprint — deploy this repo to get:
+#   https://mva-analytics.onrender.com
+# In Render Dashboard: New + → Blueprint → select this repository.
+
+services:
+  - type: web
+    name: mva-analytics
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: https://mva-analytics.onrender.com
+      - key: DEMO_RECORD_TARGET
+        value: "16500"
+      - key: SESSION_TTL_HOURS
+        value: "12"
