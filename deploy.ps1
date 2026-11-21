@@ -16,7 +16,15 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
-if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+$gitCmd = Get-Command git -ErrorAction SilentlyContinue
+if (-not $gitCmd) {
+    $fallback = 'C:\Program Files\Git\cmd\git.exe'
+    if (Test-Path $fallback) {
+        $env:PATH = 'C:\Program Files\Git\cmd;' + $env:PATH
+        $gitCmd = Get-Command git -ErrorAction SilentlyContinue
+    }
+}
+if (-not $gitCmd) {
     Write-Host 'Git is not installed yet. Install it with:' -ForegroundColor Red
     Write-Host '  winget install --id Git.Git -e --source winget --accept-source-agreements --accept-package-agreements'
     exit 1
