@@ -136,6 +136,9 @@ button { cursor: pointer; }
 .user-meta { line-height: 1.2; }
 .user-meta strong { font-size: 12px; }
 .user-meta span { font-size: 10px; color: var(--ink-500); display: block; }
+.top-progress { position: sticky; top: 68px; z-index: 29; height: 3px; background: var(--surface-tint); overflow: hidden; }
+.top-progress span { display: block; height: 100%; width: 40%; background: linear-gradient(90deg, var(--blue-500), var(--teal-500)); animation: progressSlide 1s ease-in-out infinite; }
+@keyframes progressSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 .content { padding: 24px 26px 48px; max-width: 1600px; width: 100%; margin: 0 auto; }
 
 /* ---------- Demo banner ---------- */

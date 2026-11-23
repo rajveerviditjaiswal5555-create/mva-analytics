@@ -10,6 +10,7 @@ interface Props {
   isDemo: boolean
   title: string
   subtitle: string
+  busy?: boolean
   children: React.ReactNode
 }
 
@@ -52,7 +53,7 @@ export function useReveal(deps: unknown[] = []) {
   }, deps)
 }
 
-export default function Layout({ page, onNavigate, user, onLogout, isDemo, title, subtitle, children }: Props) {
+export default function Layout({ page, onNavigate, user, onLogout, isDemo, title, subtitle, busy, children }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dark, setDark] = useState(() => localStorage.getItem('mva_theme') === 'dark')
   const [confirmLogout, setConfirmLogout] = useState(false)
@@ -115,6 +116,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
             </div>
           </div>
         </header>
+        {busy && <div className="top-progress" aria-hidden="true"><span /></div>}
         <main className="content">
           {isDemo && <DemoBanner onNavigate={navigate} />}
           {children}

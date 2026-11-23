@@ -57,7 +57,7 @@ function Router() {
 
   return (
     <Layout page={page} onNavigate={navigate} user={user} isDemo={!!overview?.is_demo}
-      onLogout={() => setUser(null)} title={META[page].title} subtitle={META[page].subtitle}>
+      onLogout={() => setUser(null)} title={META[page].title} subtitle={META[page].subtitle} busy={loading}>
       {loading && !overview ? <div className="loading"><div className="spinner" />Loading…</div> : content}
     </Layout>
   )

@@ -49,6 +49,12 @@ export default function Admin() {
 
   useEffect(() => { load() }, [tab])
 
+  useEffect(() => {
+    if (tab === 'records' && !records) {
+      api.adminStudents(recordPage).then(setRecords).catch(err => setError(err.message))
+    }
+  }, [tab, recordPage, records])
+
   if (!user || user.rank < 3) return <div className="empty">⚿ Administrator access required. <button className="btn btn-sm" onClick={() => navigate('login')}>Sign in</button></div>
 
   const wrap = async (fn: () => Promise<unknown>, message: string) => {
@@ -231,7 +237,12 @@ export default function Admin() {
               <td>{String(r.class_applied)}</td><td>{String(r.admission_status)}</td>
               <td>{r.is_synthetic ? <span className="pill amber">DEMO</span> : <span className="pill green">OFFICIAL</span>}</td>
               <td><button className="btn btn-sm btn-danger" disabled={busy}
-                onClick={() => wrap(() => api.deleteStudent(Number(r.id)), 'Record deleted.')}>Delete</button></td>
+                onClick={() => wrap(async () => {
+                  await api.deleteStudent(Number(r.id))
+                  setRecords(null)
+                  const next = await api.adminStudents(recordPage)
+                  setRecords(next)
+                }, 'Record deleted.')}>Delete</button></td>
             </tr>)}</tbody>
           </table></div>
           {records && records.pages > 1 && <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14 }}>
@@ -272,10 +283,11 @@ export default function Admin() {
                 {user.rank >= 4 && <td style={{ display: 'flex', gap: 5 }}>
                   <button className="btn btn-sm" onClick={() => wrap(() => api.updateUser(Number(u.id), { is_active: !u.is_active }), 'User status updated.')}>
                     {u.is_active ? 'Disable' : 'Enable'}</button>
-                  <button className="btn btn-sm" onClick={() => {
-                    const role = prompt('New role (VIEWER/ANALYST/SCHOOL_ADMIN/SUPER_ADMIN):', String(u.role))
-                    if (role) wrap(() => api.updateUser(Number(u.id), { role }), 'Role updated.')
-                  }}>Role</button>
+                  <select className="input" style={{ width: 132, padding: '4px 6px', fontSize: 11 }}
+                    value={String(u.role)}
+                    onChange={e => wrap(() => api.updateUser(Number(u.id), { role: e.target.value }), 'Role updated.')}>
+                    {['VIEWER', 'ANALYST', 'SCHOOL_ADMIN', 'SUPER_ADMIN'].map(r => <option key={r}>{r}</option>)}
+                  </select>
                   <button className="btn btn-sm btn-danger" onClick={() => wrap(() => api.deleteUser(Number(u.id)), 'User deleted.')}>✕</button>
                 </td>}
               </tr>)}</tbody>
