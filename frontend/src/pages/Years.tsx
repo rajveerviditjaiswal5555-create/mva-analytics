@@ -4,12 +4,15 @@ import Filters from '../components/Filters'
 import { GrowthChart } from '../components/Charts'
 import AnimatedNumber from '../components/AnimatedNumber'
 import { useEffect, useState } from 'react'
-import type { YearPoint } from '../types'
+import type { CompareReport, YearPoint } from '../types'
 
 export default function Years() {
   const { filters, setFilters, options, overview } = useApp()
   const [years, setYears] = useState<YearPoint[]>([])
   const [compare, setCompare] = useState<number[]>([])
+  const [year1, setYear1] = useState<number | null>(null)
+  const [year2, setYear2] = useState<number | null>(null)
+  const [comparison, setComparison] = useState<CompareReport | null>(null)
 
   useEffect(() => {
     api.years(filters).then(res => {
@@ -19,6 +22,12 @@ export default function Years() {
   }, [filters, overview])
 
   const toggle = (year: number) => setCompare(prev => prev.includes(year) ? prev.filter(y => y !== year) : [...prev, year])
+
+  useEffect(() => {
+    if (year1 && year2 && year1 !== year2) {
+      api.compare(filters, year1, year2).then(setComparison).catch(() => setComparison(null))
+    }
+  }, [filters, year1, year2])
 
   return (
     <>
@@ -76,6 +85,46 @@ export default function Years() {
           Previous year: <strong>{overview?.previous_year ?? '—'}</strong> with <strong>{overview?.previous_year_students.toLocaleString('en-IN') ?? '—'}</strong> ·
           Overall trend: <strong>{overview?.trend ?? '—'}</strong>
         </div>
+      </div>
+
+      <div className="section-head"><div><h2>Side-by-Side Year Comparison</h2><p>Compare any two years across every state and the top cities</p></div></div>
+      <div className="card">
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+          <div className="field" style={{ width: 160 }}>
+            <label>First year</label>
+            <select value={year1 ?? ''} onChange={e => setYear1(e.target.value ? Number(e.target.value) : null)}>
+              <option value="">Select…</option>
+              {years.map(y => <option key={y.year} value={y.year}>{y.year}</option>)}
+            </select>
+          </div>
+          <div className="field" style={{ width: 160 }}>
+            <label>Second year</label>
+            <select value={year2 ?? ''} onChange={e => setYear2(e.target.value ? Number(e.target.value) : null)}>
+              <option value="">Select…</option>
+              {years.map(y => <option key={y.year} value={y.year}>{y.year}</option>)}
+            </select>
+          </div>
+        </div>
+        {comparison ? (
+          <>
+            <div className="grid kpi-grid" style={{ marginBottom: 14 }}>
+              <div className="kpi"><div className="kpi-label">{comparison.year1} Students</div><div className="kpi-value"><AnimatedNumber value={comparison.total_year1} /></div></div>
+              <div className="kpi"><div className="kpi-label">{comparison.year2} Students</div><div className="kpi-value"><AnimatedNumber value={comparison.total_year2} /></div></div>
+              <div className="kpi"><div className="kpi-label">Overall Growth</div><div className="kpi-value" style={{ color: comparison.overall_growth >= 0 ? 'var(--green)' : 'var(--red)' }}><AnimatedNumber value={comparison.overall_growth} decimals={1} suffix="%" /></div></div>
+            </div>
+            <div className="table-wrap">
+              <table className="data">
+                <thead><tr><th>State</th><th style={{ textAlign: 'right' }}>{comparison.year1}</th><th style={{ textAlign: 'right' }}>{comparison.year2}</th><th style={{ textAlign: 'right' }}>Change</th><th style={{ textAlign: 'right' }}>Growth %</th></tr></thead>
+                <tbody>{comparison.states.map(s => <tr key={s.state}>
+                  <td>{s.state}</td><td className="num">{s.year1.toLocaleString('en-IN')}</td>
+                  <td className="num">{s.year2.toLocaleString('en-IN')}</td>
+                  <td className="num">{s.change >= 0 ? '+' : ''}{s.change}</td>
+                  <td className="num"><span className={`pill ${s.growth >= 0 ? 'green' : 'red'}`}>{s.growth >= 0 ? '+' : ''}{s.growth}%</span></td>
+                </tr>)}</tbody>
+              </table>
+            </div>
+          </>
+        ) : <div className="note">Choose two different years above to see the comparison.</div>}
       </div>
     </>
   )

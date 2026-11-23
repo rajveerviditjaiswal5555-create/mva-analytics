@@ -1,7 +1,7 @@
 """Public aggregate analytics endpoints (no individual student records)."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from ..database import get_db
@@ -13,6 +13,15 @@ router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 def _filters(request: Request) -> dict:
     return analytics.parse_filters(request.query_params)
+
+
+def _latest_years(db: Session, filters: dict) -> tuple[int | None, int | None]:
+    """Two most recent years available in the (non-year-filtered) data."""
+    rows = analytics.fetch_rows(db, {k: v for k, v in filters.items() if k != "year"})
+    years = sorted({r["year"] for r in rows if r.get("year") is not None})
+    if len(years) >= 2:
+        return years[-2], years[-1]
+    return (years[0], years[0]) if years else (None, None)
 
 
 @router.get("/overview")
@@ -130,3 +139,34 @@ def state_forecast(
         "states": [{"state": s["state"], "students": s["students"]} for s in all_states],
         "data_mode": analytics.data_mode(db),
     }
+
+
+@router.get("/performance")
+def performance(request: Request, db: Session = Depends(get_db)):
+    return analytics.performance_analysis(db, _filters(request))
+
+
+@router.get("/compare")
+def compare(
+    request: Request,
+    year1: str | None = None,
+    year2: str | None = None,
+    db: Session = Depends(get_db),
+):
+    def parse_year(value: str | None, name: str) -> int | None:
+        if value in (None, ""):
+            return None
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail=f"{name} must be an integer year")
+
+    parsed1 = parse_year(year1, "year1")
+    parsed2 = parse_year(year2, "year2")
+    if parsed1 is None or parsed2 is None:
+        latest1, latest2 = _latest_years(db, _filters(request))
+        if parsed1 is None:
+            parsed1 = latest1
+        if parsed2 is None:
+            parsed2 = latest2
+    return analytics.year_compare(db, _filters(request), year1=parsed1, year2=parsed2)

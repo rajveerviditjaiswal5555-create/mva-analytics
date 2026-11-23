@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom/client'
 import { AppProvider, useApp } from './store'
 import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
+import { ToastProvider } from './components/Toast'
+import LoadingSkeleton from './components/LoadingSkeleton'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Geography from './pages/Geography'
 import Years from './pages/Years'
+import Performance from './pages/Performance'
 import ForecastPage from './pages/Forecast'
 import Simulator from './pages/Simulator'
 import StudentsPage from './pages/Students'
@@ -23,6 +26,7 @@ const META: Record<Page, { title: string; subtitle: string }> = {
   dashboard: { title: 'Student Analytics', subtitle: 'Entrance analytics overview' },
   geography: { title: 'Geographical Analytics', subtitle: 'States, cities and countries' },
   years: { title: 'Year-wise Analysis', subtitle: 'Five-year registration comparison' },
+  performance: { title: 'Entrance Performance', subtitle: 'Scores, admission and regional outcomes' },
   forecast: { title: 'Future Predictions', subtitle: 'Validated statistical forecasting' },
   simulator: { title: 'What-If Simulator', subtitle: 'Growth / decline scenario planning' },
   students: { title: 'Student Search', subtitle: 'Authorised student-level lookup' },
@@ -48,6 +52,7 @@ function Router() {
       case 'dashboard': return <Dashboard />
       case 'geography': return <Geography />
       case 'years': return <Years />
+      case 'performance': return <Performance />
       case 'forecast': return <ForecastPage />
       case 'simulator': return <Simulator />
       case 'students': return <StudentsPage />
@@ -60,7 +65,7 @@ function Router() {
   return (
     <Layout page={page} onNavigate={navigate} user={user} isDemo={!!overview?.is_demo}
       onLogout={() => setUser(null)} title={META[page].title} subtitle={META[page].subtitle} busy={loading}>
-      {loading && !overview ? <div className="loading"><div className="spinner" />Loading…</div> : content}
+      {loading && !overview ? <LoadingSkeleton /> : content}
     </Layout>
   )
 }
@@ -68,7 +73,7 @@ function Router() {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <AppProvider><Router /></AppProvider>
+      <ToastProvider><AppProvider><Router /></AppProvider></ToastProvider>
     </ErrorBoundary>
   </React.StrictMode>
 )

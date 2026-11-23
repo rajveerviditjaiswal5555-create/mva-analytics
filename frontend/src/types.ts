@@ -43,6 +43,7 @@ export interface Forecast {
     note: string
     details: Array<{ year: number; actual: number; forecast: number; error: number; error_pct: number | null }>
   }
+  model_comparison?: Array<{ method: string; mae: number | null; rmse: number | null }>
 }
 
 export interface Overview {
@@ -165,6 +166,36 @@ export interface AuthUser {
   rank: number
 }
 
+export interface PerformanceReport {
+  available: boolean
+  summary: {
+    average_entrance_score: number
+    average_percentage: number
+    average_previous_percentage: number
+    median_entrance_score: number
+    top_score: number
+    scores_analyzed: number
+    admission_rate: number
+  }
+  score_bands: NamedStat[]
+  by_state: Array<{ state: string; students: number; average_score: number; average_percentage: number; admission_rate: number }>
+  by_city: Array<{ city: string; students: number; average_score: number }>
+  admission_funnel: NamedStat[]
+  class_performance: Array<{ class_applied: string; students: number; average_score: number; average_percentage: number }>
+  school_type_performance: Array<{ school_type: string; students: number; average_score: number }>
+  source_performance: Array<{ source_referral: string; students: number; average_score: number }>
+}
+
+export interface CompareReport {
+  year1: number
+  year2: number
+  total_year1: number
+  total_year2: number
+  overall_growth: number
+  states: Array<{ state: string; year1: number; year2: number; change: number; growth: number; percentage_year1: number; percentage_year2: number }>
+  cities: Array<{ city: string; year1: number; year2: number; change: number; growth: number; percentage_year1: number; percentage_year2: number }>
+}
+
 export type Page =
-  | 'landing' | 'login' | 'dashboard' | 'geography' | 'years'
+  | 'landing' | 'login' | 'dashboard' | 'geography' | 'years' | 'performance'
   | 'forecast' | 'simulator' | 'students' | 'admin' | 'quality'

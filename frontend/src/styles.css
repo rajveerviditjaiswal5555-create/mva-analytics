@@ -392,6 +392,34 @@ table.data td.num { font-variant-numeric: tabular-nums; text-align: right; }
   .landing-section { padding: 50px 18px; }
 }
 @media print {
-  .sidebar, .topbar, .demo-banner, .filter-bar, button { display: none !important; }
+  .sidebar, .topbar, .demo-banner, .filter-bar, button, .top-progress { display: none !important; }
   .main-area { margin: 0; }
+  .content { padding: 0; max-width: none; }
+  body { background: #fff; color: #000; }
+  .card, .kpi { break-inside: avoid; box-shadow: none; border-color: #ccc; }
+  .chart-box { height: 220px !important; }
+  .grid { gap: 8px; }
+  @page { margin: 12mm; }
 }
+
+/* Skeleton loaders */
+.skeleton { background: linear-gradient(90deg, var(--surface-tint) 25%, var(--surface) 50%, var(--surface-tint) 75%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; border-radius: 6px; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.skeleton-card { height: 96px; border-radius: var(--radius); }
+
+/* Toast notifications */
+.toast-stack { position: fixed; right: 20px; bottom: 20px; z-index: 200; display: flex; flex-direction: column; gap: 10px; max-width: min(360px, calc(100vw - 40px)); }
+.toast { display: flex; gap: 10px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--blue-500); border-radius: 10px; padding: 11px 14px; box-shadow: var(--shadow-lg); font-size: 12px; line-height: 1.5; animation: toastIn .3s cubic-bezier(.2,.8,.2,1) both; }
+.toast.success { border-left-color: var(--green); }
+.toast.error { border-left-color: var(--red); }
+.toast button { margin-left: auto; background: none; border: 0; color: var(--ink-400); font-size: 14px; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+
+/* Guided tour */
+.tour-tip { position: fixed; z-index: 210; background: var(--navy-800); color: #fff; border: 1px solid rgba(201,162,39,.4); border-radius: 12px; padding: 16px 18px; max-width: 320px; box-shadow: var(--shadow-lg); }
+.tour-tip h4 { margin: 0 0 6px; font-family: var(--display); font-size: 15px; }
+.tour-tip p { margin: 0 0 12px; font-size: 12px; line-height: 1.6; color: #c4d4e6; }
+.tour-tip .tour-actions { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tour-tip .tour-dots { display: flex; gap: 5px; }
+.tour-tip .tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.3); }
+.tour-tip .tour-dots i.active { background: var(--gold-400); }

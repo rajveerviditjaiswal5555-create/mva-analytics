@@ -6,6 +6,13 @@ from typing import Iterable
 
 Point = dict[str, float | int | str | None]
 
+METHOD_LABELS = {
+    "linear": "Linear regression (OLS)",
+    "exponential": "Exponential trend (log-linear)",
+    "moving_average": "Moving average (3-year)",
+    "holt": "Holt's linear exponential smoothing",
+}
+
 
 def _ols(xs: list[float], ys: list[float]) -> tuple[float, float]:
     n = len(xs)
@@ -20,15 +27,69 @@ def _ols(xs: list[float], ys: list[float]) -> tuple[float, float]:
 
 
 def _predict(model: str, slope: float, intercept: float, x: float) -> float:
+    """Predict at ``x = target_year - first_year`` of the fitted window.
+
+    ``holt`` and ``moving_average`` re-base their parameters to the first year
+    of the fitting window, so the same affine form works for every candidate.
+    """
     if model == "exponential":
         value = math.exp(max(-10, min(50, intercept + slope * x)))
-    else:
+    elif model == "moving_average":
+        value = intercept
+    else:  # linear and holt
         value = intercept + slope * x
     return max(0.0, value)
 
 
+_ALPHAS = (0.2, 0.4, 0.6, 0.8)
+_BETAS = (0.1, 0.3, 0.5)
+
+
+def _holt_smooth(
+    values: list[float], alpha: float, beta: float
+) -> tuple[float, float, float, list[float]]:
+    """One Holt pass; returns (level, trend, sse, one-step-ahead fits)."""
+    level = values[0]
+    trend = values[1] - values[0] if len(values) > 1 else 0.0
+    sse = 0.0
+    fitted = [level]
+    for t in range(1, len(values)):
+        forecast = level + trend
+        sse += (values[t] - forecast) ** 2
+        fitted.append(forecast)
+        previous_level = level
+        level = alpha * values[t] + (1 - alpha) * forecast
+        trend = beta * (level - previous_level) + (1 - beta) * trend
+    return level, trend, sse, fitted
+
+
+def _holt_fit(values: list[float]) -> tuple[float, float, list[float]]:
+    """Grid-search Holt's smoothing parameters.
+
+    Returns ``(trend, level_at_first_year, fitted)`` so callers can reuse the
+    standard ``intercept + slope * x`` prediction form.
+    """
+    best: tuple[float, float, float, list[float]] | None = None
+    for alpha in _ALPHAS:
+        for beta in _BETAS:
+            result = _holt_smooth(values, alpha, beta)
+            if best is None or result[2] < best[2]:
+                best = result
+    assert best is not None
+    level, trend, _, fitted = best
+    # level is the level at the final training year; re-base it to year 0 so
+    # intercept + trend * x == level + h * trend for x = target - first_year.
+    return trend, level - trend * (len(values) - 1), fitted
+
+
 def _fit(years: list[int], values: list[float], model: str) -> tuple[float, float, list[float]]:
     xs = [float(y - years[0]) for y in years]
+    if model == "moving_average":
+        window = values[-3:]
+        average = sum(window) / len(window)
+        return 0.0, average, [average] * len(values)
+    if model == "holt":
+        return _holt_fit(values)
     target = [math.log(max(1.0, v)) for v in values] if model == "exponential" else list(values)
     slope, intercept = _ols(xs, target)
     fitted = [_predict(model, slope, intercept, x) for x in xs]
@@ -73,8 +134,9 @@ def _rolling_validation(years: list[int], values: list[float], model: str) -> di
 def forecast(years: list[int], counts: list[int], horizon: int = 10) -> dict:
     """Return a validated forecast for the given historical annual counts.
 
-    Method is chosen automatically by comparing hold-out/rolling accuracy of a
-    linear trend and an exponential-trend model. All outputs are ESTIMATES.
+    Method is chosen automatically by comparing rolling-origin accuracy of a
+    linear trend, an exponential trend, a 3-year moving average and Holt's
+    linear exponential smoothing. All outputs are ESTIMATES.
     """
     years = list(years)
     counts = [max(0.0, float(c)) for c in counts]
@@ -83,7 +145,7 @@ def forecast(years: list[int], counts: list[int], horizon: int = 10) -> dict:
 
     # Choose method using rolling-origin validation on history only.
     candidates = []
-    for model in ("linear", "exponential"):
+    for model in ("linear", "exponential", "moving_average", "holt"):
         try:
             validation = _rolling_validation(years, counts, model)
             score = validation["mae"] if validation["mae"] is not None else float("inf")
@@ -94,6 +156,11 @@ def forecast(years: list[int], counts: list[int], horizon: int = 10) -> dict:
         return {"available": False, "reason": "Forecast could not be fitted to this data.", "points": []}
     candidates.sort(key=lambda item: item[0])
     best_score, method, validation = candidates[0]
+
+    model_comparison = [
+        {"method": METHOD_LABELS[m], "mae": v["mae"], "rmse": v["rmse"]}
+        for _, m, v in candidates
+    ]
 
     slope, intercept, fitted = _fit(years, counts, method)
     residuals = [c - f for c, f in zip(counts, fitted)]
@@ -124,22 +191,41 @@ def forecast(years: list[int], counts: list[int], horizon: int = 10) -> dict:
     cagr = ((last / first) ** (1 / max(1, len(counts) - 1)) - 1) * 100 if first > 0 else 0.0
     next_year_predicted = next((p["predicted"] for p in points if p["is_forecast"]), None)
 
+    direction = (
+        "downward"
+        if (slope < 0 or (abs(slope) < 1e-9 and counts[-1] < counts[0]))
+        else "upward"
+    )
     if method == "linear":
         explanation = (
             f"A straight-line trend was fitted to the {n} historical years. "
             f"Registrations change by about {abs(slope):.0f} students per year "
-            f"({'upward' if slope >= 0 else 'downward'} direction)."
+            f"({direction} direction)."
         )
-    else:
+    elif method == "exponential":
         explanation = (
             f"A compound-growth trend was fitted to the {n} historical years, "
-            f"implying an average yearly change of about {abs((math.exp(slope) - 1) * 100):.1f}%."
+            f"implying an average yearly change of about {abs((math.exp(slope) - 1) * 100):.1f}% "
+            f"({direction} direction)."
+        )
+    elif method == "moving_average":
+        explanation = (
+            f"The forecast holds at the 3-year moving average of the most recent "
+            f"observations (about {intercept:,.0f} students), smoothing out short-term "
+            f"noise while the historical direction is {direction}."
+        )
+    else:  # holt
+        explanation = (
+            f"Holt's linear exponential smoothing tracked both the level and the trend "
+            f"across the {n} historical years; the trend is {direction} by about "
+            f"{abs(slope):.0f} students per year."
         )
 
     return {
         "available": True,
-        "method": "Linear regression (OLS)" if method == "linear" else "Exponential trend (log-linear)",
+        "method": METHOD_LABELS[method],
         "method_key": method,
+        "model_comparison": model_comparison,
         "slope": round(slope, 3),
         "historical_cagr_pct": round(cagr, 2),
         "growth_rate_pct": round(cagr, 2),

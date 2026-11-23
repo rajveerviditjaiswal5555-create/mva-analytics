@@ -11,6 +11,7 @@ from openpyxl import load_workbook
 from sqlalchemy.orm import Session
 
 from ..models import AcademicYear, Location, School, Setting, Student, UploadedDataset
+from .cache import cache_clear
 
 CANONICAL = [
     "student_id", "application_id", "full_name", "gender", "date_of_birth",
@@ -201,6 +202,7 @@ def preview(db: Session, filename: str, raw: bytes, uploaded_by: str) -> dict:
 
 
 def confirm_import(db: Session, staging_id: int, keep_existing: bool = True) -> dict:
+    cache_clear()
     staging = db.get(UploadedDataset, staging_id)
     if staging is None:
         raise ValueError("Staging dataset not found.")

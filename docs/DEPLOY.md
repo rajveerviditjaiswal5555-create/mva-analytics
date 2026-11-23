@@ -60,6 +60,17 @@ https://mva-analytics.onrender.com/#/simulator
 https://mva-analytics.onrender.com/#/admin
 ```
 
+## Hardening before real use
+
+1. **Change default passwords** — log in as `superadmin`, go to **Admin → Users**, create your real accounts, then disable/delete the four demo users.
+2. **`SECRET_KEY`** — `render.yaml` uses `generateValue: true`, so a random secret is created automatically. You can override it with your own long random string in Render → Environment.
+3. **Revoke deployment tokens** — delete any Personal Access Token from https://github.com/settings/tokens after deployment.
+
+## Always-on and custom domain
+
+- **Always-on:** in `render.yaml` change `plan: free` → `plan: starter` and push, or change the plan in the Render dashboard. The free tier sleeps after ~15 minutes idle.
+- **Custom domain:** buy a domain (e.g. `analytics.yourschool.in`), then in Render → your service → **Settings → Custom Domain → Add Custom Domain**, enter the hostname, and add the CNAME record your registrar asks for. Render issues a free SSL certificate automatically. Update `ALLOWED_ORIGINS` in Render → Environment to include `https://analytics.yourschool.in`.
+
 ## Notes
 
 - **Free tier sleeps** after ~15 minutes of inactivity; the first request after sleep can take 20–30 seconds. Upgrade to a paid plan for always-on.

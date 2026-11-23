@@ -6,6 +6,7 @@ services:
   - type: web
     name: mva-analytics
     runtime: docker
+    # Free tier sleeps after ~15 min idle. Change `free` to `starter` for always-on (paid).
     plan: free
     region: singapore
     dockerfilePath: ./Dockerfile

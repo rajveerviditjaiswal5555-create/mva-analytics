@@ -36,6 +36,7 @@ export default function Dashboard() {
         <div><h2>Student Analytics</h2><p>Overview of the selected dataset · all figures computed dynamically</p></div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-sm" onClick={refresh}>↻ Refresh</button>
+          <button className="btn btn-sm" onClick={() => window.print()}>⎙ Print report</button>
           {user && user.rank >= 2 && <button className="btn btn-sm" onClick={async () => {
             const url = api.exportUrl('xlsx', filters)
             const token = api.getToken()

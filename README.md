@@ -18,6 +18,8 @@ When an authorised administrator uploads official data via the Admin Panel, the 
 
 ## ✨ Features
 
+**New in this release:** interactive India choropleth map, entrance-performance analytics, side-by-side year comparison, four back-tested forecasting models with model comparison, vector-chart PDF reports with branded header, shareable filter URLs, toast notifications, skeleton loaders, first-login guided tour, login rate limiting, cached analytics, print-friendly reports, and CI tests.
+
 | Area | What it does |
 |---|---|
 | **Public Website** | Beautiful landing page with Home, About, Student Reach, State-wise Reach, Country-wise Reach, Five-Year Growth, Future Outlook, Contact/Admin Login. Aggregated statistics only — never individual records. |

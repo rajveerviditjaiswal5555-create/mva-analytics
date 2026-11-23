@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { AuthUser, Page } from '../types'
 import { setToken } from '../api'
+import GuidedTour from './GuidedTour'
 
 interface Props {
   page: Page
@@ -18,6 +19,7 @@ const NAV: Array<{ page: Page; icon: string; label: string; group: string; minRa
   { page: 'dashboard', icon: '◈', label: 'Dashboard', group: 'ANALYTICS' },
   { page: 'geography', icon: '⬡', label: 'Geographical Analytics', group: 'ANALYTICS' },
   { page: 'years', icon: '▤', label: 'Year-wise Analysis', group: 'ANALYTICS' },
+  { page: 'performance', icon: '★', label: 'Entrance Performance', group: 'ANALYTICS' },
   { page: 'forecast', icon: '◇', label: 'Future Predictions', group: 'ANALYTICS' },
   { page: 'simulator', icon: '⇄', label: 'What-If Simulator', group: 'ANALYTICS' },
   { page: 'students', icon: '☰', label: 'Student Search', group: 'DATA', minRank: 2 },
@@ -35,10 +37,9 @@ export function DemoBanner({ onNavigate, compact = false }: { onNavigate?: (p: P
   )
 }
 
-/** Attaches an IntersectionObserver to every .reveal element so it fades in on scroll. */
+/** Fades in .reveal elements on scroll. Watches for elements added after data loads. */
 export function useReveal(deps: unknown[] = []) {
   useEffect(() => {
-    const elements = document.querySelectorAll('.reveal:not(.visible)')
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -46,9 +47,26 @@ export function useReveal(deps: unknown[] = []) {
           observer.unobserve(entry.target)
         }
       })
-    }, { threshold: 0.08 })
-    elements.forEach(el => observer.observe(el))
-    return () => observer.disconnect()
+    }, { threshold: 0.05 })
+
+    let frame = 0
+    const scan = () => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el))
+      })
+    }
+    scan()
+
+    const root = document.getElementById('root')
+    const mutations = root ? new MutationObserver(scan) : null
+    mutations?.observe(root!, { childList: true, subtree: true })
+
+    return () => {
+      mutations?.disconnect()
+      observer.disconnect()
+      cancelAnimationFrame(frame)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 }
@@ -56,6 +74,7 @@ export function useReveal(deps: unknown[] = []) {
 export default function Layout({ page, onNavigate, user, onLogout, isDemo, title, subtitle, busy, children }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dark, setDark] = useState(() => localStorage.getItem('mva_theme') === 'dark')
+  useReveal([])
   const [confirmLogout, setConfirmLogout] = useState(false)
 
   useEffect(() => {
@@ -121,6 +140,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
           {isDemo && <DemoBanner onNavigate={navigate} />}
           {children}
         </main>
+        {page === 'dashboard' && <GuidedTour />}
       </div>
 
       {confirmLogout && (

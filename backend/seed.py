@@ -8,6 +8,7 @@ from .database import Base, SessionLocal, engine
 from .generators.synthetic import generate_records
 from .models import AcademicYear, EntranceExam, Location, School, Setting, Student
 from .security import ensure_roles_and_default_users
+from .services.cache import cache_clear
 
 
 def init_db(seed_demo: bool = True) -> None:
@@ -29,6 +30,7 @@ def init_db(seed_demo: bool = True) -> None:
 
 def seed_demo_data(db, total: int = DEMO_RECORD_TARGET) -> int:
     """Replace all current records with freshly generated synthetic ones."""
+    cache_clear()
     db.query(Student).delete()
     db.query(EntranceExam).delete()
     db.query(AcademicYear).delete()

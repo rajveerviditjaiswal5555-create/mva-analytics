@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { useApp } from '../store'
+import { useToast } from '../components/Toast'
 import AnimatedNumber from '../components/AnimatedNumber'
 import type { QualityReport } from '../types'
 
@@ -22,6 +23,7 @@ interface PreviewData {
 
 export default function Admin() {
   const { user, overview, quality, refresh, navigate, filters } = useApp()
+  const toast = useToast()
   const [tab, setTab] = useState<Tab>('overview')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -59,8 +61,8 @@ export default function Admin() {
 
   const wrap = async (fn: () => Promise<unknown>, message: string) => {
     setBusy(true); setError(''); setNotice('')
-    try { await fn(); setNotice(message); await load(); await refresh() }
-    catch (err) { setError(err instanceof Error ? err.message : 'Operation failed') }
+    try { await fn(); setNotice(message); toast.push(message, 'success'); await load(); await refresh() }
+    catch (err) { const text = err instanceof Error ? err.message : 'Operation failed'; setError(text); toast.push(text, 'error') }
     finally { setBusy(false) }
   }
 
@@ -83,6 +85,7 @@ export default function Admin() {
       a.download = `mva_report_${new Date().toISOString().slice(0, 10)}.${format === 'xlsx' ? 'xlsx' : format === 'pdf' ? 'pdf' : 'csv'}`
       a.click()
       setNotice(`${format.toUpperCase()} report downloaded.`)
+      toast.push(`${format.toUpperCase()} report downloaded.`, 'success')
     } catch (err) { setError(err instanceof Error ? err.message : 'Export failed') }
     finally { setBusy(false) }
   }
@@ -129,6 +132,15 @@ export default function Admin() {
                 <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => wrap(() => api.regenerateDemo(), 'Demo dataset regenerated with 16,500 synthetic records.')}>↻ Regenerate demo data</button>
                 {user.rank >= 4 && <button className="btn btn-danger btn-sm" disabled={busy} onClick={() => wrap(() => api.clearDemo(), 'Synthetic records removed.')}>✕ Remove demo data</button>}
               </div>
+            </div>
+            <div className="card" style={{ borderColor: '#fcd34d' }}>
+              <h3 className="card-title">⚠ Security Reminder</h3>
+              <p className="card-sub">Before sharing the public link</p>
+              <ul style={{ fontSize: 12, lineHeight: 1.9, color: 'var(--ink-700)', margin: 0, paddingLeft: 18 }}>
+                <li>Create real accounts in <strong>Users</strong> and remove the four demo users.</li>
+                <li>Replace the default passwords (<code className="mono">Admin@MVA2026!</code> etc.).</li>
+                <li>Remove synthetic demo data once official data is imported and verified.</li>
+              </ul>
             </div>
             <div className="card">
               <h3 className="card-title">Quick Actions</h3>

@@ -17,6 +17,7 @@ from ..security import (
     hash_password, require_admin, require_super_admin, role_payload,
 )
 from ..services import analytics, exporter, importer
+from ..services.cache import cache_clear
 from .auth import log_action
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -129,6 +130,7 @@ def import_confirm(
     db: Session = Depends(get_db),
     request: Request = None,
 ):
+    cache_clear()
     if payload.replace_demo:
         db.query(Student).filter(Student.is_synthetic.is_(True)).delete()
         db.commit()
@@ -169,6 +171,7 @@ def clear_demo(
     db: Session = Depends(get_db),
     request: Request = None,
 ):
+    cache_clear()
     removed = db.query(Student).filter(Student.is_synthetic.is_(True)).delete()
     mode = db.get(Setting, "data_mode")
     if mode and not db.query(Student).filter(Student.is_synthetic.is_(False)).count():
@@ -225,6 +228,7 @@ def create_student(
     )
     db.add(record)
     db.commit()
+    cache_clear()
     log_action(db, user, "student_create", "students", record.student_id, request=request)
     return {"id": record.id, "status": "created"}
 
@@ -252,6 +256,7 @@ def update_student(
     record.school_id = school.id
     record.is_synthetic = False
     db.commit()
+    cache_clear()
     log_action(db, user, "student_update", "students", record.student_id, request=request)
     return {"status": "updated"}
 
@@ -269,6 +274,7 @@ def delete_student(
     identifier = record.student_id
     db.delete(record)
     db.commit()
+    cache_clear()
     log_action(db, user, "student_delete", "students", identifier, request=request)
     return {"status": "deleted"}
 

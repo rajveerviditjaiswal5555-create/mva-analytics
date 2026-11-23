@@ -1,6 +1,6 @@
 import type {
-  AuthUser, CountryInfo, FilterOption, Insight, Overview, QualityReport,
-  StateInfo, StudentRecord, YearPoint,
+  AuthUser, CompareReport, CountryInfo, FilterOption, Insight, Overview,
+  PerformanceReport, QualityReport, StateInfo, StudentRecord, YearPoint,
 } from './types'
 
 const TOKEN_KEY = 'mva_token'
@@ -66,6 +66,10 @@ export const api = {
     request<{ years: YearPoint[]; total: number }>(`/api/analytics/years${query(filters)}`),
   cities: (filters: Record<string, string | number | undefined>) =>
     request<{ cities: Array<{ name: string; students: number; percentage: number }> }>(`/api/analytics/cities${query(filters)}`),
+  performance: (filters: Record<string, string | number | undefined>) =>
+    request<PerformanceReport>(`/api/analytics/performance${query(filters)}`),
+  compare: (filters: Record<string, string | number | undefined>, year1?: number, year2?: number) =>
+    request<CompareReport>(`/api/analytics/compare${query({ ...filters, year1, year2 })}`),
   filterOptions: () => request<FilterOption>('/api/analytics/filter-options'),
   forecast: (filters: Record<string, string | number | undefined>, horizon = 10) =>
     request<Overview['forecast']>(`/api/analytics/forecast${query({ ...filters, horizon })}`),

@@ -22,20 +22,31 @@ interface AppState {
 const Ctx = createContext<AppState | null>(null)
 
 const PAGES: Page[] = [
-  'landing', 'login', 'dashboard', 'geography', 'years', 'forecast',
-  'simulator', 'students', 'quality', 'admin',
+  'landing', 'login', 'dashboard', 'geography', 'years', 'performance',
+  'forecast', 'simulator', 'students', 'quality', 'admin',
 ]
 
-function pageFromHash(): Page {
-  const value = window.location.hash.replace(/^#\/?/, '').toLowerCase()
-  return (PAGES.includes(value as Page) ? value : 'landing') as Page
+function parseHash(): { page: Page; filters: Record<string, string> } {
+  const raw = window.location.hash.replace(/^#\/?/, '')
+  const [pathPart = '', queryPart = ''] = raw.split('?')
+  const page = (PAGES.includes(pathPart.toLowerCase() as Page) ? pathPart.toLowerCase() : 'landing') as Page
+  const filters: Record<string, string> = {}
+  new URLSearchParams(queryPart).forEach((value, key) => { filters[key] = value })
+  return { page, filters }
+}
+
+function hashFor(page: Page, filters: Record<string, string>): string {
+  if (page === 'landing') return ''
+  const query = new URLSearchParams(filters).toString()
+  return `#/${page}${query ? `?${query}` : ''}`
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [page, setPage] = useState<Page>(pageFromHash)
+  const initial = parseHash()
+  const [page, setPage] = useState<Page>(initial.page)
   const [user, setUser] = useState<AuthUser | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
-  const [filters, setFilters] = useState<Record<string, string>>({})
+  const [filters, setFiltersState] = useState<Record<string, string>>(initial.filters)
   const [options, setOptions] = useState<FilterOption | null>(null)
   const [overview, setOverview] = useState<Overview | null>(null)
   const [insights, setInsights] = useState<Insight[]>([])
@@ -45,12 +56,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const navigate = useCallback((p: Page) => {
     setPage(p)
-    window.location.hash = p === 'landing' ? '' : `#/${p}`
+    window.location.hash = hashFor(p, filters)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [])
+  }, [filters])
+
+  const setFilters = useCallback((next: Record<string, string>) => {
+    setFiltersState(next)
+    window.location.hash = hashFor(page, next)
+  }, [page])
 
   useEffect(() => {
-    const onHashChange = () => { setPage(pageFromHash()); window.scrollTo(0, 0) }
+    const onHashChange = () => {
+      const parsed = parseHash()
+      setPage(parsed.page)
+      setFiltersState(parsed.filters)
+      window.scrollTo(0, 0)
+    }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])

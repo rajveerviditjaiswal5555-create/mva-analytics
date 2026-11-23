@@ -1,14 +1,17 @@
 """All analytics are computed dynamically from the database — nothing is hard-coded."""
 from __future__ import annotations
 
+import json
 from collections import Counter, defaultdict
 from datetime import date
+from statistics import median
 from typing import Any
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..models import AcademicYear, Location, School, Setting, Student
+from .cache import cache_get, cache_set
 from .forecasting import classify_growth, forecast
 
 FILTER_KEYS = [
@@ -30,6 +33,10 @@ def parse_filters(params) -> dict[str, Any]:
 
 def fetch_rows(db: Session, filters: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     filters = filters or {}
+    cache_key = "rows:" + json.dumps(filters, sort_keys=True, default=str)
+    cached = cache_get(cache_key)
+    if cached is not None:
+        return cached
     query = (
         db.query(
             Student.id.label("id"),
@@ -90,6 +97,7 @@ def fetch_rows(db: Session, filters: dict[str, Any] | None = None) -> list[dict[
             if isinstance(item.get(key), date):
                 item[key] = item[key].isoformat()
         rows.append(item)
+    cache_set(cache_key, rows, ttl_seconds=10)
     return rows
 
 
@@ -100,6 +108,27 @@ def data_mode(db: Session) -> str:
 
 def _pct(part: int, whole: int) -> float:
     return round(part / whole * 100, 1) if whole else 0.0
+
+
+def _numeric(values) -> list[float]:
+    """Keep only genuine numeric values (None/strings are ignored)."""
+    return [v for v in values if isinstance(v, (int, float))]
+
+
+def _average(rows: list[dict], field: str) -> float:
+    values = _numeric(r.get(field) for r in rows)
+    return round(sum(values) / len(values), 1) if values else 0.0
+
+
+def _group(rows: list[dict], key: str) -> dict[str, list[dict]]:
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for row in rows:
+        grouped[row.get(key) or "Unknown"].append(row)
+    return grouped
+
+
+def _admitted(rows: list[dict]) -> int:
+    return sum(1 for r in rows if r.get("admission_status") == "Admitted")
 
 
 def _year_series(rows: list[dict]) -> list[dict]:
@@ -431,4 +460,159 @@ def filter_options(db: Session) -> dict[str, list]:
         "years": years, "states": states, "districts": districts, "cities": cities,
         "countries": countries, "genders": genders, "classes": classes,
         "statuses": statuses, "school_types": school_types,
+    }
+
+
+def performance_analysis(db: Session, filters: dict[str, Any] | None = None) -> dict:
+    """Score distribution and performance breakdowns, all derived from the data."""
+    rows = fetch_rows(db, filters)
+    total = len(rows)
+    scores = _numeric(r.get("entrance_score") for r in rows)
+    percentages = _numeric(r.get("percentage") for r in rows)
+    previous = _numeric(r.get("previous_academic_percentage") for r in rows)
+
+    summary = {
+        "average_entrance_score": round(sum(scores) / len(scores), 1) if scores else 0.0,
+        "average_percentage": round(sum(percentages) / len(percentages), 1) if percentages else 0.0,
+        "average_previous_percentage": round(sum(previous) / len(previous), 1) if previous else 0.0,
+        "median_entrance_score": round(median(scores), 1) if scores else 0.0,
+        "top_score": round(max(scores), 1) if scores else 0,
+        "scores_analyzed": len(scores),
+        "admission_rate": _pct(_admitted(rows), total),
+    }
+
+    # Every band is reported, including empty ones, so charts stay consistent.
+    band_specs = [
+        ("Below 200", lambda s: s < 200),
+        ("200-249", lambda s: 200 <= s < 250),
+        ("250-299", lambda s: 250 <= s < 300),
+        ("300-349", lambda s: 300 <= s < 350),
+        ("350-399", lambda s: 350 <= s < 400),
+        ("400 and above", lambda s: s >= 400),
+    ]
+    score_bands = [
+        {
+            "label": label,
+            "students": sum(1 for score in scores if test(score)),
+            "percentage": _pct(sum(1 for score in scores if test(score)), len(scores)),
+        }
+        for label, test in band_specs
+    ]
+
+    by_state = [
+        {
+            "state": state,
+            "students": len(items),
+            "average_score": _average(items, "entrance_score"),
+            "average_percentage": _average(items, "percentage"),
+            "admission_rate": _pct(_admitted(items), len(items)),
+        }
+        for state, items in _group(rows, "state").items()
+    ]
+    by_state.sort(key=lambda item: (-item["average_score"], item["state"]))
+    by_state = by_state[:15]
+
+    by_city = [
+        {"city": city, "students": len(items), "average_score": _average(items, "entrance_score")}
+        for city, items in _group(rows, "city").items()
+    ]
+    by_city.sort(key=lambda item: (-item["students"], item["city"]))
+    by_city = by_city[:15]
+
+    status_counts = Counter(r.get("admission_status") or "Unknown" for r in rows)
+    admission_funnel = [
+        {"status": status, "students": count, "percentage": _pct(count, total)}
+        for status, count in sorted(status_counts.items(), key=lambda item: (-item[1], item[0]))
+    ]
+
+    class_performance = [
+        {
+            "class_applied": name,
+            "students": len(items),
+            "average_score": _average(items, "entrance_score"),
+            "average_percentage": _average(items, "percentage"),
+        }
+        for name, items in sorted(_group(rows, "class_applied").items())
+    ]
+
+    school_type_performance = [
+        {"school_type": name, "students": len(items), "average_score": _average(items, "entrance_score")}
+        for name, items in _group(rows, "school_type").items()
+    ]
+    school_type_performance.sort(key=lambda item: (-item["students"], item["school_type"]))
+
+    source_performance = [
+        {"source_referral": name, "students": len(items), "average_score": _average(items, "entrance_score")}
+        for name, items in _group(rows, "source_referral").items()
+    ]
+    source_performance.sort(key=lambda item: (-item["students"], item["source_referral"]))
+
+    return {
+        "available": bool(rows),
+        "summary": summary,
+        "score_bands": score_bands,
+        "by_state": by_state,
+        "by_city": by_city,
+        "admission_funnel": admission_funnel,
+        "class_performance": class_performance,
+        "school_type_performance": school_type_performance,
+        "source_performance": source_performance,
+    }
+
+
+def year_compare(
+    db: Session,
+    filters: dict[str, Any] | None = None,
+    year1: int | None = None,
+    year2: int | None = None,
+) -> dict:
+    """Compare two academic years across the whole dataset and per location."""
+    # Drop any year filter: the comparison years are supplied explicitly.
+    clean_filters = {k: v for k, v in (filters or {}).items() if k != "year"}
+    rows = fetch_rows(db, clean_filters)
+
+    if year1 is None or year2 is None:
+        available_years = sorted({r["year"] for r in rows if r.get("year") is not None})
+        if year2 is None:
+            year2 = available_years[-1] if available_years else year1
+        if year1 is None:
+            others = [y for y in available_years if y != year2]
+            year1 = others[-1] if others else year2
+
+    try:
+        y1 = int(year1) if year1 is not None else 0
+        y2 = int(year2) if year2 is not None else 0
+    except (TypeError, ValueError):
+        y1 = y2 = 0
+
+    selected = [r for r in rows if r.get("year") in (y1, y2)]
+    total_year1 = sum(1 for r in selected if r.get("year") == y1)
+    total_year2 = sum(1 for r in selected if r.get("year") == y2)
+    overall_growth = round((total_year2 - total_year1) / total_year1 * 100, 1) if total_year1 else 0.0
+
+    def breakdown(key: str) -> list[dict]:
+        result = []
+        for name, items in _group(selected, key).items():
+            c1 = sum(1 for r in items if r.get("year") == y1)
+            c2 = sum(1 for r in items if r.get("year") == y2)
+            result.append({
+                key: name,
+                "year1": c1,
+                "year2": c2,
+                "change": c2 - c1,
+                "growth": round((c2 - c1) / c1 * 100, 1) if c1 else 0.0,
+                "percentage_year1": _pct(c1, total_year1),
+                "percentage_year2": _pct(c2, total_year2),
+            })
+        result.sort(key=lambda item: (-item["year2"], item[key]))
+        return result
+
+    return {
+        "year1": y1,
+        "year2": y2,
+        "total_year1": total_year1,
+        "total_year2": total_year2,
+        "overall_growth": overall_growth,
+        "states": breakdown("state"),
+        "cities": breakdown("city")[:15],
     }

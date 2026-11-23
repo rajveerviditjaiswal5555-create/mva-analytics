@@ -1,6 +1,9 @@
 """Authentication endpoints."""
 from __future__ import annotations
 
+import threading
+import time
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -12,6 +15,24 @@ from ..security import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+MAX_FAILED_ATTEMPTS = 5
+ATTEMPT_WINDOW_SECONDS = 300
+
+# (ip, username) -> [failed_count, first_attempt_monotonic]
+_attempts: dict[tuple[str, str], list[float]] = {}
+_attempts_lock = threading.Lock()
+
+
+def _purge_expired_attempts(now: float) -> None:
+    """Drop tracking entries whose window has elapsed (call while locked)."""
+    for key, record in list(_attempts.items()):
+        if now - record[1] >= ATTEMPT_WINDOW_SECONDS:
+            _attempts.pop(key, None)
+
+
+def _client_ip(request: Request) -> str:
+    return request.client.host if request and request.client else "unknown"
 
 
 class LoginRequest(BaseModel):
@@ -31,10 +52,33 @@ def log_action(db: Session, user: User | None, action: str, entity: str = "", en
 
 @router.post("/login")
 def login(payload: LoginRequest, request: Request, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == payload.username.strip().lower()).first()
+    username = payload.username.strip().lower()
+    key = (_client_ip(request), username)
+    now = time.monotonic()
+
+    with _attempts_lock:
+        record = _attempts.get(key)
+        if record and record[0] >= MAX_FAILED_ATTEMPTS and now - record[1] < ATTEMPT_WINDOW_SECONDS:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many failed login attempts. Try again in a few minutes.",
+            )
+
+    user = db.query(User).filter(User.username == username).first()
     if user is None or not user.is_active or not verify_password(payload.password, user.password_hash):
+        with _attempts_lock:
+            now = time.monotonic()
+            record = _attempts.get(key)
+            if record is None or now - record[1] >= ATTEMPT_WINDOW_SECONDS:
+                _attempts[key] = [1, now]
+                _purge_expired_attempts(now)
+            else:
+                record[0] += 1
         log_action(db, None, "login_failed", details=f"username={payload.username}", request=request)
         raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    with _attempts_lock:
+        _attempts.pop(key, None)
     token = create_session(db, user)
     log_action(db, user, "login", details="Session created", request=request)
     return {"token": token, "user": role_payload(user)}

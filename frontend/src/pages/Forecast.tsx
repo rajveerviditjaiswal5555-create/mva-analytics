@@ -113,7 +113,21 @@ export default function ForecastPage() {
               <div className="note" style={{ marginTop: 12 }}>{fc.explanation} Historical CAGR: <strong>{fc.historical_cagr_pct}%</strong> per year.</div>
             </div>
             <div className="card">
-              <h3 className="card-title">Full Forecast Table</h3>
+              <h3 className="card-title">Model Comparison</h3>
+              <p className="card-sub">Four methods back-tested on history · lowest MAE selected automatically</p>
+              <div className="table-wrap">
+                <table className="data">
+                  <thead><tr><th>Method</th><th style={{ textAlign: 'right' }}>MAE</th><th style={{ textAlign: 'right' }}>RMSE</th></tr></thead>
+                  <tbody>{(fc.model_comparison || []).map((m, i) => (
+                    <tr key={m.method} style={{ opacity: i === 0 ? 1 : .72 }}>
+                      <td>{m.method} {i === 0 && <span className="pill green">SELECTED</span>}</td>
+                      <td className="num">{m.mae ?? '—'}</td>
+                      <td className="num">{m.rmse ?? '—'}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </div>
+              <h3 className="card-title" style={{ marginTop: 18 }}>Full Forecast Table</h3>
               <p className="card-sub">Actual values end at {lastActualYear}; everything below is an estimate</p>
               <div className="table-wrap">
                 <table className="data">

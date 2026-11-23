@@ -4,6 +4,7 @@ import { api } from '../api'
 import Filters from '../components/Filters'
 import RankTable from '../components/RankTable'
 import { BarDistribution, DonutChart, StackedYearChart } from '../components/Charts'
+import IndiaMap from '../components/IndiaMap'
 import type { CountryInfo, StateInfo } from '../types'
 
 export default function Geography() {
@@ -37,6 +38,12 @@ export default function Geography() {
         <div className="kpi"><div className="kpi-label">Countries</div><div className="kpi-value">{countries.length}</div></div>
         <div className="kpi"><div className="kpi-label">Cities</div><div className="kpi-value">{overview?.cities_count ?? 0}</div></div>
         <div className="kpi"><div className="kpi-label">Districts</div><div className="kpi-value">{overview?.districts_count ?? 0}</div></div>
+      </div>
+
+      <div className="card reveal" style={{ marginTop: 18 }}>
+        <h3 className="card-title">Student Reach Across India</h3>
+        <p className="card-sub">Interactive choropleth map · colour intensity shows registrations from each state</p>
+        <IndiaMap data={states.map(s => ({ name: s.state, students: s.students, percentage: s.percentage }))} height={520} />
       </div>
 
       <div className="grid chart-grid" style={{ marginTop: 18 }}>
