@@ -7,6 +7,7 @@ interface AppState {
   navigate: (page: Page) => void
   user: AuthUser | null
   setUser: (user: AuthUser | null) => void
+  authLoading: boolean
   filters: Record<string, string>
   setFilters: (f: Record<string, string>) => void
   options: FilterOption | null
@@ -33,6 +34,7 @@ function pageFromHash(): Page {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [page, setPage] = useState<Page>(pageFromHash)
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [options, setOptions] = useState<FilterOption | null>(null)
   const [overview, setOverview] = useState<Overview | null>(null)
@@ -73,16 +75,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     api.filterOptions().then(setOptions).catch(() => undefined)
     if (getToken()) {
-      api.me().then(res => { if (res.authenticated && res.user) setUser(res.user) }).catch(() => undefined)
+      api.me()
+        .then(res => { if (res.authenticated && res.user) setUser(res.user) })
+        .catch(() => undefined)
+        .finally(() => setAuthLoading(false))
+    } else {
+      setAuthLoading(false)
     }
   }, [])
 
   useEffect(() => { refresh() }, [refresh])
 
   const value = useMemo<AppState>(() => ({
-    page, navigate, user, setUser, filters, setFilters, options,
+    page, navigate, user, setUser, authLoading, filters, setFilters, options,
     overview, insights, quality, loading, error, refresh,
-  }), [page, navigate, user, filters, options, overview, insights, quality, loading, error, refresh])
+  }), [page, navigate, user, authLoading, filters, options, overview, insights, quality, loading, error, refresh])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

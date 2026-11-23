@@ -31,12 +31,14 @@ const META: Record<Page, { title: string; subtitle: string }> = {
 }
 
 function Router() {
-  const { page, navigate, user, setUser, overview, loading } = useApp()
+  const { page, navigate, user, setUser, authLoading, overview, loading } = useApp()
 
   useEffect(() => { document.title = `${META[page].title ? META[page].title + ' | ' : ''}Macro Vision Academy` }, [page])
 
   if (page === 'landing') return <Landing onLogin={() => navigate(user ? 'dashboard' : 'login')} />
   if (page === 'login') return <Login />
+
+  if (authLoading) return <div className="loading"><div className="spinner" />Restoring your session…</div>
 
   const requireAuth = ['students', 'admin'].includes(page) && !user
   if (requireAuth) return <Login />
