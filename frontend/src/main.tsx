@@ -35,7 +35,7 @@ const META: Record<Page, { title: string; subtitle: string }> = {
 }
 
 function Router() {
-  const { page, navigate, user, setUser, authLoading, overview, loading } = useApp()
+  const { page, navigate, user, setUser, authLoading, overview, loading, fetchBusy } = useApp()
 
   useEffect(() => { document.title = `${META[page].title ? META[page].title + ' | ' : ''}Macro Vision Academy` }, [page])
 
@@ -64,7 +64,7 @@ function Router() {
 
   return (
     <Layout page={page} onNavigate={navigate} user={user} isDemo={!!overview?.is_demo}
-      onLogout={() => setUser(null)} title={META[page].title} subtitle={META[page].subtitle} busy={loading}>
+      onLogout={() => setUser(null)} title={META[page].title} subtitle={META[page].subtitle} busy={loading || fetchBusy}>
       {loading && !overview ? <LoadingSkeleton /> : content}
     </Layout>
   )

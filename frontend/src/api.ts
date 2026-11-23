@@ -13,22 +13,33 @@ export function setToken(token: string | null) {
   else localStorage.removeItem(TOKEN_KEY)
 }
 
+let pending = 0
+function setPending(delta: number) {
+  pending = Math.max(0, pending + delta)
+  window.dispatchEvent(new CustomEvent('mva:fetch', { detail: { pending } }))
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  setPending(1)
   const token = getToken()
   const headers: Record<string, string> = { ...(options.headers as Record<string, string> || {}) }
   if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
-  const response = await fetch(path, { ...options, headers })
-  if (!response.ok) {
-    let message = `Request failed (${response.status})`
-    try {
-      const data = await response.json()
-      message = data.detail || message
-    } catch { /* ignore */ }
-    if (response.status === 401 && !path.includes('/auth/login')) setToken(null)
-    throw new Error(message)
+  try {
+    const response = await fetch(path, { ...options, headers })
+    if (!response.ok) {
+      let message = `Request failed (${response.status})`
+      try {
+        const data = await response.json()
+        message = data.detail || message
+      } catch { /* ignore */ }
+      if (response.status === 401 && !path.includes('/auth/login')) setToken(null)
+      throw new Error(message)
+    }
+    return await response.json() as T
+  } finally {
+    setPending(-1)
   }
-  return response.json() as Promise<T>
 }
 
 function query(filters: Record<string, string | number | undefined>): string {

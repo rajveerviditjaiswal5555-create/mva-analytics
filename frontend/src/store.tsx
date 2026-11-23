@@ -15,6 +15,7 @@ interface AppState {
   insights: Insight[]
   quality: QualityReport | null
   loading: boolean
+  fetchBusy: boolean
   error: string
   refresh: () => Promise<void>
 }
@@ -52,6 +53,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [insights, setInsights] = useState<Insight[]>([])
   const [quality, setQuality] = useState<QualityReport | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchBusy, setFetchBusy] = useState(false)
   const [error, setError] = useState('')
 
   const navigate = useCallback((p: Page) => {
@@ -105,12 +107,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    const onFetch = (e: Event) => setFetchBusy((e as CustomEvent<{ pending: number }>).detail.pending > 0)
+    window.addEventListener('mva:fetch', onFetch)
+    return () => window.removeEventListener('mva:fetch', onFetch)
+  }, [])
+
   useEffect(() => { refresh() }, [refresh])
 
   const value = useMemo<AppState>(() => ({
     page, navigate, user, setUser, authLoading, filters, setFilters, options,
-    overview, insights, quality, loading, error, refresh,
-  }), [page, navigate, user, authLoading, filters, options, overview, insights, quality, loading, error, refresh])
+    overview, insights, quality, loading, fetchBusy, error, refresh,
+  }), [page, navigate, user, authLoading, filters, options, overview, insights, quality, loading, fetchBusy, error, refresh])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

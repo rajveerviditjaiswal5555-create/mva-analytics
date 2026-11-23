@@ -135,7 +135,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
             </div>
           </div>
         </header>
-        {busy && <div className="top-progress" aria-hidden="true"><span /></div>}
+        {busy && <div className="top-progress" role="status" aria-label="Loading data"><span /></div>}
         <main className="content">
           {isDemo && <DemoBanner onNavigate={navigate} />}
           {children}
