@@ -4,11 +4,11 @@ import {
 } from 'recharts'
 import type { ForecastPoint, NamedStat, YearPoint } from '../types'
 
-const PALETTE = ['#6ba3ff', '#2dd4bf', '#f0c75e', '#a78bfa', '#fb7185', '#38bdf8', '#f472b6', '#4ade80', '#fbbf24', '#818cf8']
+const PALETTE = ['#0d99ff', '#9747ff', '#1abcfe', '#0acf83', '#ffcd29', '#ff7262', '#b07cff', '#5cbcff', '#8ce0c2', '#a3a3a3']
 
 const tooltipStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)',
-  borderRadius: 10, fontSize: 11, boxShadow: '0 8px 24px rgba(0,0,0,.12)', color: 'var(--ink-900)',
+  borderRadius: 6, fontSize: 11, boxShadow: '0 8px 24px -8px rgba(0,0,0,.28)', color: 'var(--ink-900)',
 }
 
 const fmt = (value: number) => Math.round(value).toLocaleString('en-IN')
@@ -20,22 +20,22 @@ export function GrowthChart({ data, height = 290 }: { data: YearPoint[]; height?
         <AreaChart data={data} margin={{ top: 12, right: 12, left: -18, bottom: 0 }}>
           <defs>
             <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6ba3ff" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="#6ba3ff" stopOpacity={0.01} />
+              <stop offset="0%" stopColor="#0d99ff" stopOpacity={0.28} />
+              <stop offset="100%" stopColor="#0d99ff" stopOpacity={0.01} />
             </linearGradient>
             <linearGradient id="growthLine" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#2dd4bf" />
-              <stop offset="100%" stopColor="#6ba3ff" />
+              <stop offset="0%" stopColor="#1abcfe" />
+              <stop offset="100%" stopColor="#0d99ff" />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="var(--line)" />
           <XAxis dataKey="year" tickLine={false} axisLine={false} dy={8} />
           <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} width={52} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v) => [fmt(Number(v)), 'Students']} />
-          {data.length > 0 && <ReferenceDot x={data.at(-1)!.year} y={data.at(-1)!.students} r={6} fill="#f0c75e" stroke="#fff" strokeWidth={2} isFront />}
-          <Area type="monotone" dataKey="students" stroke="url(#growthLine)" strokeWidth={3}
-            fill="url(#growthFill)" animationDuration={1100} dot={{ r: 4, fill: '#0b1220', strokeWidth: 2.5, stroke: '#6ba3ff' }}
-            activeDot={{ r: 7, strokeWidth: 3, fill: '#6ba3ff' }} />
+          {data.length > 0 && <ReferenceDot x={data.at(-1)!.year} y={data.at(-1)!.students} r={5} fill="#9747ff" stroke="#fff" strokeWidth={2} isFront />}
+          <Area type="monotone" dataKey="students" stroke="url(#growthLine)" strokeWidth={2.5}
+            fill="url(#growthFill)" animationDuration={1100} dot={{ r: 3.5, fill: 'var(--surface)', strokeWidth: 2, stroke: '#0d99ff' }}
+            activeDot={{ r: 6, strokeWidth: 2, fill: '#0d99ff' }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -57,8 +57,8 @@ export function ForecastChart({ points, height = 320 }: { points: ForecastPoint[
         <ComposedChart data={data} margin={{ top: 12, right: 14, left: -10, bottom: 0 }}>
           <defs>
             <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f0c75e" stopOpacity={0.22} />
-              <stop offset="100%" stopColor="#f0c75e" stopOpacity={0.04} />
+              <stop offset="0%" stopColor="#9747ff" stopOpacity={0.20} />
+              <stop offset="100%" stopColor="#9747ff" stopOpacity={0.03} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="var(--line)" />
@@ -66,13 +66,13 @@ export function ForecastChart({ points, height = 320 }: { points: ForecastPoint[
           <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} domain={['auto', 'auto']} width={52} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v, name) => [fmt(Number(v)), name === 'actual' ? 'Actual students' : 'Predicted (ESTIMATE)']} />
           <Legend formatter={(v) => v === 'actual' ? 'Historical actual' : v === 'predicted' ? 'Forecast estimate' : 'Uncertainty range'} wrapperStyle={{ fontSize: 10 }} />
-          {lastActual && <ReferenceLine x={lastActual} stroke="#f0c75e" strokeDasharray="4 4" label={{ value: 'Forecast →', fontSize: 10, fill: '#f0c75e', position: 'insideTopRight' }} />}
+          {lastActual && <ReferenceLine x={lastActual} stroke="#9747ff" strokeDasharray="4 4" label={{ value: 'Forecast →', fontSize: 10, fill: '#9747ff', position: 'insideTopRight' }} />}
           <Area dataKey="base" stackId="uncertainty" stroke="none" fill="transparent" isAnimationActive={false} legendType="none" tooltipType="none" />
           <Area dataKey="band" stackId="uncertainty" stroke="none" fill="url(#bandFill)" isAnimationActive={false} name="Uncertainty range" tooltipType="none" />
-          <Line type="monotone" dataKey="actual" stroke="#6ba3ff" strokeWidth={3}
-            dot={{ r: 3.5, fill: '#6ba3ff' }} connectNulls animationDuration={1000} />
-          <Line type="monotone" dataKey="predicted" stroke="#f0c75e" strokeWidth={3} strokeDasharray="7 5"
-            dot={{ r: 3.5, fill: '#f0c75e' }} connectNulls animationDuration={1200} />
+          <Line type="monotone" dataKey="actual" stroke="#0d99ff" strokeWidth={2.5}
+            dot={{ r: 3, fill: '#0d99ff' }} connectNulls animationDuration={1000} />
+          <Line type="monotone" dataKey="predicted" stroke="#9747ff" strokeWidth={2.5} strokeDasharray="7 5"
+            dot={{ r: 3, fill: '#9747ff' }} connectNulls animationDuration={1200} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -110,7 +110,7 @@ export function BarDistribution({ data, title = '', height = 290, color = '#2563
             <XAxis type="number" tickLine={false} axisLine={false} tickFormatter={fmt} />
             <YAxis type="category" dataKey="name" width={112} tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
             <Tooltip contentStyle={tooltipStyle} formatter={(v) => [fmt(Number(v)), 'Students']} />
-            <Bar dataKey="students" fill={color} radius={[0, 6, 6, 0]} animationDuration={900}>
+            <Bar dataKey="students" fill={color} radius={[0, 4, 4, 0]} animationDuration={900}>
               {items.map((entry, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
             </Bar>
           </BarChart>
@@ -127,7 +127,7 @@ export function BarDistribution({ data, title = '', height = 290, color = '#2563
             tickFormatter={(v: string) => v.length > 13 ? v.slice(0, 11) + '…' : v} />
           <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v) => [fmt(Number(v)), 'Students']} />
-          <Bar dataKey="students" radius={[6, 6, 0, 0]} animationDuration={900}>
+          <Bar dataKey="students" radius={[4, 4, 0, 0]} animationDuration={900}>
             {items.map((entry, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
           </Bar>
         </BarChart>
@@ -215,7 +215,7 @@ export function GenderPie({ data }: { data: NamedStat[] }) {
         <PieChart>
           <Pie data={data} dataKey="students" nameKey="name" cx="50%" cy="50%"
             outerRadius="72%" animationDuration={900} label>
-            {data.map((_, i) => <Cell key={i} fill={['#3b82f6', '#ec4899', '#a855f7'][i % 3]} />)}
+            {data.map((_, i) => <Cell key={i} fill={['#0d99ff', '#ff7262', '#9747ff'][i % 3]} />)}
           </Pie>
           <Tooltip contentStyle={tooltipStyle} />
           <Legend wrapperStyle={{ fontSize: 10 }} />

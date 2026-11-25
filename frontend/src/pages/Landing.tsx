@@ -26,7 +26,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
       <nav className="lnav">
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <div className="brand-crest">M</div>
-          <div style={{ fontFamily: 'var(--display)', fontSize: 15 }}>Macro Vision Academy</div>
+          <div className="brand-title">Macro Vision Academy</div>
         </div>
         <div className="lnav-links">
           <a onClick={() => scrollTo('about')} style={{ cursor: 'pointer' }}>About</a>
@@ -51,7 +51,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           </p>
           <div className="hero-actions">
             <button className="btn btn-gold" onClick={onLogin}>Explore the Dashboard →</button>
-            <button className="btn btn-ghost" style={{ borderColor: 'rgba(255,255,255,.35)', color: '#fff' }} onClick={() => scrollTo('about')}>Learn about the system</button>
+            <button className="btn btn-ghost" onClick={() => scrollTo('about')}>Learn about the system</button>
           </div>
           <div className="hero-stats">
             <div><AnimatedNumber value={ov?.total_students ?? 0} /><small>Records analysed</small></div>
@@ -64,8 +64,8 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           <div className="hero-card">
             <div className="hc-title">Five-Year Registration Trend</div>
             <div className="hc-main"><AnimatedNumber value={ov?.current_year_students ?? 0} /></div>
-            <div style={{ fontSize: 12, color: '#9db6cf' }}>students in {ov?.current_year ?? 2026}
-              <span style={{ color: '#6ee7b7', marginLeft: 8 }}>{ov ? `${ov.yoy_growth >= 0 ? '+' : ''}${ov.yoy_growth}% YoY` : ''}</span>
+            <div style={{ fontSize: 12, color: 'var(--ink-500)' }}>students in {ov?.current_year ?? 2026}
+              <span style={{ color: 'var(--green)', marginLeft: 8 }}>{ov ? `${ov.yoy_growth >= 0 ? '+' : ''}${ov.yoy_growth}% YoY` : ''}</span>
             </div>
             <div className="hero-mini">
               {(ov?.yearly ?? Array.from({ length: 5 }, (_, i) => ({ year: 2022 + i, students: 0, change: 0, growth: 0, cumulative: 0 }))).map((item, i) => (
@@ -148,8 +148,8 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
             { y: (ov?.forecast.next_year ?? 2026) + 9, v: ov?.forecast.forecast_10y, label: 'In 10 years' },
           ].map(item => (
             <div className="feature" key={item.label}>
-              <div style={{ color: 'var(--gold-500)', fontWeight: 700, fontSize: 11, letterSpacing: 1 }}>{item.label} · {item.y}</div>
-              <div style={{ fontSize: 29, fontWeight: 700, color: 'var(--navy-700)', marginTop: 6 }}>
+              <div style={{ color: 'var(--accent)', fontWeight: 600, fontSize: 10, letterSpacing: .8 }}>{item.label} · {item.y}</div>
+              <div style={{ fontSize: 27, fontWeight: 650, letterSpacing: '-.035em', color: 'var(--ink-900)', marginTop: 6 }}>
                 {item.v != null ? <AnimatedNumber value={item.v} /> : '—'}
               </div>
               <div style={{ fontSize: 10, color: 'var(--ink-500)', marginTop: 4 }}>ESTIMATE · {ov?.forecast.method || '—'}</div>

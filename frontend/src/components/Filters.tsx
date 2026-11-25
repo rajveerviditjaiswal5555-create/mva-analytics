@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
+import Icon from './Icon'
 import type { FilterOption } from '../types'
 
 interface Props {
@@ -54,7 +55,7 @@ export default function Filters({ options, filters, onChange, showRanges = true 
   return (
     <div className="filter-bar">
       <div className="filter-bar-head">
-        <strong>◈ Filters {activeCount > 0 && <span className="pill blue">{activeCount} active</span>}</strong>
+        <strong><Icon name="filter" size={14} /> Filters {activeCount > 0 && <span className="pill blue">{activeCount} active</span>}</strong>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-sm" onClick={() => setExpanded(!expanded)}>{expanded ? 'Show less' : 'All filters'}</button>
           <button className="btn btn-sm" disabled={activeCount === 0} onClick={() => onChange({})}>Clear all</button>

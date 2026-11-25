@@ -52,8 +52,8 @@ export default function Motion() {
       const card = (e.target as HTMLElement).closest('.tilt-card') as HTMLElement | null
       if (!card) return
       const r = card.getBoundingClientRect()
-      const rx = ((e.clientY - r.top) / r.height - .5) * -8
-      const ry = ((e.clientX - r.left) / r.width - .5) * 8
+      const rx = ((e.clientY - r.top) / r.height - .5) * -4
+      const ry = ((e.clientX - r.left) / r.width - .5) * 4
       card.style.setProperty('--rx', `${rx}deg`)
       card.style.setProperty('--ry', `${ry}deg`)
     }
