@@ -52,6 +52,13 @@ function query(filters: Record<string, string | number | undefined>): string {
 }
 
 export const api = {
+  aiStatus: () => request<{ available: boolean }>('/api/ai/status'),
+  aiSuggestions: () => request<{ suggested: string[] }>('/api/ai/suggestions'),
+  aiAsk: (message: string, filters: Record<string, string | number | undefined>, history: Array<{ role: string; content: string }>) =>
+    request<{ answer: string; suggested: string[]; available: boolean }>('/api/ai/ask', {
+      method: 'POST', body: JSON.stringify({ message, filters, history }),
+    }),
+
   getToken,
   setToken,
   health: () => request<{ status: string }>('/api/health'),
@@ -81,7 +88,8 @@ export const api = {
     request<PerformanceReport>(`/api/analytics/performance${query(filters)}`),
   compare: (filters: Record<string, string | number | undefined>, year1?: number, year2?: number) =>
     request<CompareReport>(`/api/analytics/compare${query({ ...filters, year1, year2 })}`),
-  filterOptions: () => request<FilterOption>('/api/analytics/filter-options'),
+  filterOptions: (filters: Record<string, string | number | undefined> = {}) =>
+    request<FilterOption>(`/api/analytics/filter-options${query(filters)}`),
   forecast: (filters: Record<string, string | number | undefined>, horizon = 10) =>
     request<Overview['forecast']>(`/api/analytics/forecast${query({ ...filters, horizon })}`),
   whatIf: (filters: Record<string, string | number | undefined>, growth: number, horizon = 5) =>

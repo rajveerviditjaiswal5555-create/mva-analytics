@@ -26,7 +26,6 @@ export default function StudentsPage() {
 
   return (
     <>
-      {data?.is_demo && <div className="demo-banner"><span className="badge">DEMO</span><span>All student records shown here are synthetic. They do not represent real people or actual Macro Vision Academy students.</span></div>}
       <Filters options={options} filters={filters} onChange={f => { setFilters(f); setPage(1) }} />
       <div className="section-head">
         <div><h2>Student Search</h2><p>Search by student ID, application ID, name, city, state, country, year or class</p></div>

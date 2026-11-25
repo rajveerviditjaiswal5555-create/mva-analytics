@@ -64,7 +64,8 @@ https://mva-analytics.onrender.com/#/admin
 
 1. **Change default passwords** — log in as `superadmin`, go to **Admin → Users**, create your real accounts, then disable/delete the four demo users.
 2. **`SECRET_KEY`** — `render.yaml` uses `generateValue: true`, so a random secret is created automatically. You can override it with your own long random string in Render → Environment.
-3. **Revoke deployment tokens** — delete any Personal Access Token from https://github.com/settings/tokens after deployment.
+3. **AI assistant** — add `AI_API_KEY` in Render → Environment (the value is marked `sync: false` in `render.yaml`, so it is never stored in Git). `AI_BASE_URL` defaults to Groq and `AI_MODEL` to `qwen/qwen3.8-27b`. The key is only used server-side; the browser never sees it.
+4. **Revoke deployment tokens** — delete any Personal Access Token from https://github.com/settings/tokens after deployment. Also rotate the Groq key if it was ever pasted into a chat or shared.
 
 ## Always-on and custom domain
 

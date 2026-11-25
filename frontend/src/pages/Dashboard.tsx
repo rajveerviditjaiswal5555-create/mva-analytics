@@ -4,7 +4,7 @@ import { api } from '../api'
 import KpiCard from '../components/KpiCard'
 import Filters from '../components/Filters'
 import RankTable from '../components/RankTable'
-import { DemoBanner, useReveal } from '../components/Layout'
+import { useReveal } from '../components/Layout'
 import { BarDistribution, DonutChart, ForecastChart, GrowthChart } from '../components/Charts'
 import AnimatedNumber from '../components/AnimatedNumber'
 import type { Insight } from '../types'
@@ -29,6 +29,8 @@ export default function Dashboard() {
     <>
       {user?.rank === 0 && <div className="note" style={{ marginBottom: 14 }}>🔒 You are viewing aggregate analytics as a guest. <button className="btn btn-sm" onClick={() => navigate('login')}>Sign in</button> for student search and administration.</div>}
       {error && <div className="login-error">⚠ {error} <button className="btn btn-sm" onClick={refresh}>Retry</button></div>}
+
+      {ov.is_demo && <div className="demo-note"><strong>DEMO DATA:</strong> All figures on this dashboard are generated from synthetic demonstration records and do not represent actual Macro Vision Academy students. Authorised staff can replace this with official data from the Admin Panel.</div>}
 
       <Filters options={options} filters={filters} onChange={setFilters} />
 

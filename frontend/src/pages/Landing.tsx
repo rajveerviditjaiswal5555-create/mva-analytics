@@ -73,9 +73,6 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
               ))}
             </div>
             <div className="hero-footnote">Aggregated statistics only · No individual student records shown publicly</div>
-            {ov?.is_demo && <div className="public-notice" style={{ marginTop: 10, padding: '8px 10px', fontSize: 10 }}>
-              ⚠ DEMO DATA — figures are calculated from synthetic demonstration records.
-            </div>}
           </div>
         </div>
       </header>
@@ -115,7 +112,6 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
             {ov && <BarDistribution data={ov.top_countries} horizontal height={280} max={8} color="#0d9488" />}
           </div>
         </div>
-        {ov?.is_demo && <div className="public-notice">⚠ DEMO DATA — The statistics on this public page are calculated from synthetic demonstration records and do not represent actual Macro Vision Academy students.</div>}
       </section>
 
       <section className="landing-section" id="growth">

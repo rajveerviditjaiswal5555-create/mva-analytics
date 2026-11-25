@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { api } from '../api'
 import type { FilterOption } from '../types'
 
 interface Props {
@@ -22,13 +23,30 @@ const FIELDS: Array<{ key: string; label: string; opt: keyof FilterOption }> = [
 
 export default function Filters({ options, filters, onChange, showRanges = true }: Props) {
   const [expanded, setExpanded] = useState(false)
+  const [localOptions, setLocalOptions] = useState<FilterOption | null>(options)
   const activeCount = Object.values(filters).filter(v => v && v !== 'all').length
+
+  // District and city dropdowns narrow to the selected state / country.
+  useEffect(() => {
+    if (!options) return
+    api.filterOptions({ state: filters.state, country: filters.country })
+      .then(setLocalOptions)
+      .catch(() => setLocalOptions(options))
+  }, [filters.state, filters.country, options])
 
   const set = (key: string, value: string) => {
     const next = { ...filters }
     if (value) next[key] = value
     else delete next[key]
+    // Cascading: changing country clears state/district/city; changing state clears district/city.
+    if (key === 'country') { delete next.state; delete next.district; delete next.city }
+    if (key === 'state') { delete next.district; delete next.city }
     onChange(next)
+  }
+
+  const optsFor = (field: typeof FIELDS[number]) => {
+    if (field.key === 'district' || field.key === 'city') return localOptions?.[field.opt] || []
+    return options?.[field.opt] || []
   }
 
   const visibleFields = expanded ? FIELDS : FIELDS.slice(0, 6)
@@ -48,12 +66,22 @@ export default function Filters({ options, filters, onChange, showRanges = true 
             <label>{field.label}</label>
             <select value={filters[field.key] || ''} onChange={e => set(field.key, e.target.value)}>
               <option value="">All {field.label.toLowerCase()}s</option>
-              {(options?.[field.opt] || []).map(value => (
+              {optsFor(field).map(value => (
                 <option key={String(value)} value={String(value)}>{String(value)}</option>
               ))}
             </select>
           </div>
         ))}
+        <div className="field">
+          <label>Prediction Year</label>
+          <select value={filters.horizon || '10'} onChange={e => set('horizon', e.target.value)}>
+            <option value="1">Next year (1)</option>
+            <option value="2">2 years ahead</option>
+            <option value="3">3 years ahead</option>
+            <option value="5">5 years ahead</option>
+            <option value="10">10 years ahead</option>
+          </select>
+        </div>
         {expanded && showRanges && (
           <>
             <div className="field"><label>Score min</label><input type="number" placeholder="0" value={filters.score_min || ''} onChange={e => set('score_min', e.target.value)} /></div>

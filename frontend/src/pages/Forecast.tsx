@@ -11,7 +11,7 @@ export default function ForecastPage() {
   const [stateName, setStateName] = useState('')
   const [stateForecast, setStateForecast] = useState<Awaited<ReturnType<typeof api.stateForecast>> | null>(null)
   const [states, setStates] = useState<StateInfo[]>([])
-  const [horizon, setHorizon] = useState(10)
+  const horizon = Number(filters.horizon || 10)
   const [forecastData, setForecastData] = useState<Overview['forecast'] | null>(null)
 
   const fc = forecastData ?? overview?.forecast
@@ -39,18 +39,9 @@ export default function ForecastPage() {
     <>
       <Filters options={options} filters={filters} onChange={setFilters} />
       <div className="section-head">
-        <div><h2>Future Prediction System</h2><p>Statistical estimates derived from historical registrations · never guaranteed numbers</p></div>
-        <div className="field" style={{ width: 130 }}><label>Horizon</label>
-          <select value={horizon} onChange={e => setHorizon(Number(e.target.value))}>
-            {[3, 5, 10, 15, 20].map(h => <option key={h} value={h}>{h} years</option>)}
-          </select>
-        </div>
+        <div><h2>Future Prediction System</h2><p>Statistical estimates derived from historical registrations · never guaranteed numbers · horizon set in the filter bar</p></div>
       </div>
 
-      <div className="demo-banner" style={{ background: 'linear-gradient(90deg,#1e3a8a,#4338ca)' }}>
-        <span className="badge">ESTIMATE</span>
-        <span>All predictions on this page are statistical projections. They are not confirmed or guaranteed registration figures.</span>
-      </div>
 
       {!fc || !fc.available ? (
         <div className="empty">Forecast requires at least two years of data. Current selection: {historical.length} year(s).</div>

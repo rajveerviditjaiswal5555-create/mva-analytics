@@ -14,6 +14,13 @@ services:
     envVars:
       - key: SECRET_KEY
         generateValue: true
+      # AI assistant key — set the real value in Render dashboard (not in Git).
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: AI_MODEL
+        value: qwen/qwen3.8-27b
       - key: ALLOWED_ORIGINS
         value: https://mva-analytics.onrender.com
       - key: DEMO_RECORD_TARGET

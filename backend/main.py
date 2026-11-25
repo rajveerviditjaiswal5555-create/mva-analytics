@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import ALLOWED_ORIGINS, BASE_DIR
-from .routers import admin, analytics, auth, students
+from .routers import admin, ai, analytics, auth, students
 from .seed import init_db
 
 DIST = BASE_DIR / "frontend" / "dist"
@@ -38,6 +38,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(ai.router)
 app.include_router(analytics.router)
 app.include_router(students.router)
 app.include_router(admin.router)

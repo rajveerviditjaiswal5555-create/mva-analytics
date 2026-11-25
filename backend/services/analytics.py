@@ -445,11 +445,20 @@ def search_students(db: Session, query: str, filters: dict[str, Any] | None = No
     }
 
 
-def filter_options(db: Session) -> dict[str, list]:
-    """Distinct values for populating filter dropdowns."""
+def filter_options(db: Session, selection: dict[str, Any] | None = None) -> dict[str, list]:
+    """Distinct values for dropdowns. District/city options narrow when a state is selected."""
+    selection = selection or {}
     states = [value for (value,) in db.query(Location.state).distinct().order_by(Location.state) if value]
-    districts = [value for (value,) in db.query(Location.district).distinct().order_by(Location.district) if value]
-    cities = [value for (value,) in db.query(Location.city).distinct().order_by(Location.city) if value]
+
+    location_query = db.query(Location)
+    if selection.get("country"):
+        location_query = location_query.filter(Location.country == selection["country"])
+    if selection.get("state"):
+        location_query = location_query.filter(Location.state == selection["state"])
+    locations = location_query.all()
+
+    districts = sorted({loc.district for loc in locations if loc.district})
+    cities = sorted({loc.city for loc in locations if loc.city})
     countries = [value for (value,) in db.query(Location.country).distinct().order_by(Location.country) if value]
     years = [value for (value,) in db.query(AcademicYear.year).distinct().order_by(AcademicYear.year)]
     genders = [value for (value,) in db.query(Student.gender).distinct().order_by(Student.gender) if value]

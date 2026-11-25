@@ -5,6 +5,10 @@ import Layout from './components/Layout'
 import ErrorBoundary from './components/ErrorBoundary'
 import { ToastProvider } from './components/Toast'
 import LoadingSkeleton from './components/LoadingSkeleton'
+import Assistant from './components/Assistant'
+import Backdrop from './components/Backdrop'
+
+document.documentElement.setAttribute('data-theme', localStorage.getItem('mva_theme') === 'light' ? 'light' : 'dark')
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -37,7 +41,10 @@ const META: Record<Page, { title: string; subtitle: string }> = {
 function Router() {
   const { page, navigate, user, setUser, authLoading, overview, loading, fetchBusy } = useApp()
 
-  useEffect(() => { document.title = `${META[page].title ? META[page].title + ' | ' : ''}Macro Vision Academy` }, [page])
+  useEffect(() => {
+    document.title = `${META[page].title ? META[page].title + ' | ' : ''}Macro Vision Academy`
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('mva_theme') === 'light' ? 'light' : 'dark')
+  }, [page])
 
   if (page === 'landing') return <Landing onLogin={() => navigate(user ? 'dashboard' : 'login')} />
   if (page === 'login') return <Login />
@@ -73,7 +80,13 @@ function Router() {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ToastProvider><AppProvider><Router /></AppProvider></ToastProvider>
+      <Backdrop />
+      <ToastProvider>
+        <AppProvider>
+          <Router />
+          <Assistant />
+        </AppProvider>
+      </ToastProvider>
     </ErrorBoundary>
   </React.StrictMode>
 )

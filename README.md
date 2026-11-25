@@ -18,7 +18,9 @@ When an authorised administrator uploads official data via the Admin Panel, the 
 
 ## ✨ Features
 
-**New in this release:** interactive India choropleth map, entrance-performance analytics, side-by-side year comparison, four back-tested forecasting models with model comparison, vector-chart PDF reports with branded header, shareable filter URLs, toast notifications, skeleton loaders, first-login guided tour, login rate limiting, cached analytics, print-friendly reports, and CI tests.
+**New in this release:** premium dark UI with aurora glows and OpenRouter-style animations, interactive India choropleth map, entrance-performance analytics, side-by-side year comparison, four back-tested forecasting models, cascading state → district → city filters, a Prediction Year selector in the filter bar, a data-grounded **AI assistant** (Groq / Qwen 3.8 27B, key stays server-side), vector-chart PDF reports, shareable filter URLs, toast notifications, skeleton loaders, guided tour, login rate limiting and cached analytics.
+
+**Synthetic-data disclosure:** a compact `DEMO DATA` pill in the top bar plus one concise explanation on the dashboard — no repeated banners.
 
 | Area | What it does |
 |---|---|

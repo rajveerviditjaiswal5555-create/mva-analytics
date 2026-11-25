@@ -27,16 +27,6 @@ const NAV: Array<{ page: Page; icon: string; label: string; group: string; minRa
   { page: 'admin', icon: '⚙', label: 'Admin Panel', group: 'SYSTEM', minRank: 3 },
 ]
 
-export function DemoBanner({ onNavigate, compact = false }: { onNavigate?: (p: Page) => void; compact?: boolean }) {
-  return (
-    <div className="demo-banner" style={compact ? { marginBottom: 14 } : undefined}>
-      <span className="badge">DEMO</span>
-      <span>DEMO DATA — Synthetic records for demonstration only. No record represents a real student of Macro Vision Academy.</span>
-      {onNavigate && <a className="banner-link" onClick={() => onNavigate('admin')} style={{ cursor: 'pointer' }}>Upload official data →</a>}
-    </div>
-  )
-}
-
 /** Fades in .reveal elements on scroll. Watches for elements added after data loads. */
 export function useReveal(deps: unknown[] = []) {
   useEffect(() => {
@@ -73,7 +63,7 @@ export function useReveal(deps: unknown[] = []) {
 
 export default function Layout({ page, onNavigate, user, onLogout, isDemo, title, subtitle, busy, children }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [dark, setDark] = useState(() => localStorage.getItem('mva_theme') === 'dark')
+  const [dark, setDark] = useState(() => localStorage.getItem('mva_theme') !== 'light')
   useReveal([])
   const [confirmLogout, setConfirmLogout] = useState(false)
 
@@ -123,6 +113,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
             <div className="page-heading">{title}<small>{subtitle}</small></div>
           </div>
           <div className="topbar-right">
+            {isDemo && <button className="demo-pill" title="Synthetic demonstration records — not actual Macro Vision Academy students" onClick={() => navigate('admin')}>DEMO DATA</button>}
             <button className="icon-btn" onClick={() => setDark(!dark)} title="Toggle theme">{dark ? '☀' : '☾'}</button>
             <button className="icon-btn" onClick={() => navigate('landing')} title="Public website">🌐</button>
             <div className="user-chip">
@@ -136,8 +127,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
           </div>
         </header>
         {busy && <div className="top-progress" role="status" aria-label="Loading data"><span /></div>}
-        <main className="content">
-          {isDemo && <DemoBanner onNavigate={navigate} />}
+        <main className="content page-enter" key={page}>
           {children}
         </main>
         {page === 'dashboard' && <GuidedTour />}

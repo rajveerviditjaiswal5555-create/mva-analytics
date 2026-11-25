@@ -11,7 +11,7 @@ export default function Simulator() {
   const { filters, setFilters, options, overview } = useApp()
   const [growth, setGrowth] = useState(10)
   const [result, setResult] = useState<Awaited<ReturnType<typeof api.whatIf>> | null>(null)
-  const [horizon, setHorizon] = useState(5)
+  const horizon = Math.min(10, Number(filters.horizon || 5))
 
   useEffect(() => {
     api.whatIf(filters, growth, horizon).then(setResult).catch(() => undefined)
@@ -54,12 +54,7 @@ export default function Simulator() {
             {PRESETS.map(p => <button key={p} className={`tab ${growth === p ? 'active' : ''}`} onClick={() => setGrowth(p)}>{p >= 0 ? '+' : ''}{p}%</button>)}
           </div>
           <div className="divider" />
-          <div className="field" style={{ maxWidth: 200 }}>
-            <label>Projection horizon</label>
-            <select value={horizon} onChange={e => setHorizon(Number(e.target.value))}>
-              {[3, 5, 10].map(h => <option key={h} value={h}>{h} years</option>)}
-            </select>
-          </div>
+          <div className="note" style={{ marginTop: 8 }}>Projection horizon is set with <strong>Prediction Year</strong> in the filter bar (currently {horizon} years).</div>
           <div className="note" style={{ marginTop: 14 }}>
             Simulation uses the current-year count of <strong>{current.toLocaleString('en-IN')}</strong> ({result?.current_year ?? overview?.current_year}) as the base. Values shown are illustrative scenarios, not forecasts from the statistical model.
           </div>

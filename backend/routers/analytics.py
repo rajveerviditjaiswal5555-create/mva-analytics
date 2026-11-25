@@ -61,8 +61,9 @@ def cities(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/filter-options")
-def filter_options(db: Session = Depends(get_db)):
-    return analytics.filter_options(db)
+def filter_options(request: Request, db: Session = Depends(get_db)):
+    """Dropdown options; pass ?state=Assam to scope districts/cities to that state."""
+    return analytics.filter_options(db, _filters(request))
 
 
 @router.get("/forecast")
