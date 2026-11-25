@@ -50,7 +50,7 @@ export default function Assistant() {
             <div className="assistant-avatar">✦</div>
             <div>
               <strong>AI Analytics Assistant</strong>
-              <span>{available ? 'Online · grounded in your data' : 'Not configured'}</span>
+              <span><i className="pulse-dot" style={{ marginRight: 6 }} />{available ? 'Online · grounded in your data' : 'Not configured'}</span>
             </div>
             <button className="assistant-close" onClick={() => setOpen(false)} aria-label="Close">×</button>
           </div>

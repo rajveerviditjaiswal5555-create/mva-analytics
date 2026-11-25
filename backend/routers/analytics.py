@@ -57,7 +57,7 @@ def years(request: Request, db: Session = Depends(get_db)):
 @router.get("/cities")
 def cities(request: Request, db: Session = Depends(get_db)):
     rows = analytics.fetch_rows(db, _filters(request))
-    return {"cities": analytics._ranking(rows, "city", len(rows)), "total": len(rows)}
+    return {"cities": analytics._city_ranking(rows), "total": len(rows)}
 
 
 @router.get("/filter-options")

@@ -158,6 +158,23 @@ def _ranking(rows: list[dict], key: str, total: int) -> list[dict]:
     ]
 
 
+def _city_ranking(rows: list[dict]) -> list[dict]:
+    counts = Counter(r.get("city") or "Unknown" for r in rows)
+    districts: dict[str, Counter] = defaultdict(Counter)
+    total = len(rows)
+    for row in rows:
+        districts[row.get("city") or "Unknown"][row.get("district") or "Unknown"] += 1
+    return [
+        {
+            "name": name,
+            "district": districts[name].most_common(1)[0][0],
+            "students": count,
+            "percentage": _pct(count, total),
+        }
+        for name, count in sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+    ]
+
+
 def _distribution(rows: list[dict], key: str) -> list[dict]:
     return _ranking(rows, key, len(rows))
 
@@ -465,10 +482,15 @@ def filter_options(db: Session, selection: dict[str, Any] | None = None) -> dict
     classes = [value for (value,) in db.query(Student.class_applied).distinct().order_by(Student.class_applied) if value]
     statuses = [value for (value,) in db.query(Student.admission_status).distinct().order_by(Student.admission_status) if value]
     school_types = [value for (value,) in db.query(School.school_type).distinct().order_by(School.school_type) if value]
+    city_details = sorted(
+        {(loc.city, loc.district) for loc in locations if loc.city and loc.district},
+        key=lambda item: (item[0], item[1]),
+    )
     return {
         "years": years, "states": states, "districts": districts, "cities": cities,
         "countries": countries, "genders": genders, "classes": classes,
         "statuses": statuses, "school_types": school_types,
+        "city_details": [{"city": c, "district": d} for c, d in city_details],
     }
 
 

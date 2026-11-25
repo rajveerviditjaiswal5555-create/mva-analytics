@@ -3,6 +3,7 @@ export interface NamedStat {
   students: number
   percentage: number
   rank?: number
+  district?: string
 }
 
 export interface YearPoint {

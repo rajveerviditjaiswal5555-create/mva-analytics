@@ -13,12 +13,17 @@ from typing import Any
 # (state, weight, [(city, district, pincode_prefix), ...])
 INDIA_STATES: list[tuple[str, float, list[tuple[str, str, str]]]] = [
     ("Madhya Pradesh", 0.395, [
-        ("Burhanpur", "Burhanpur", "450331"), ("Indore", "Indore", "452001"),
-        ("Bhopal", "Bhopal", "462001"), ("Jabalpur", "Jabalpur", "482001"),
-        ("Ujjain", "Ujjain", "456001"), ("Gwalior", "Gwalior", "474001"),
-        ("Khandwa", "Khandwa", "450001"), ("Dhar", "Dhar", "454001"),
+        ("Burhanpur", "Burhanpur", "450331"), ("Shahpur", "Burhanpur", "450114"),
+        ("Nepanagar", "Burhanpur", "450221"), ("Indore", "Indore", "452001"),
+        ("Rajendra Nagar", "Indore", "452012"), ("Bhopal", "Bhopal", "462001"),
+        ("Mandideep", "Bhopal", "462026"), ("Jabalpur", "Jabalpur", "482001"),
+        ("Sihora", "Jabalpur", "483001"), ("Ujjain", "Ujjain", "456001"),
+        ("Nagda", "Ujjain", "456331"), ("Gwalior", "Gwalior", "474001"),
+        ("Morar", "Gwalior", "474006"), ("Khandwa", "Khandwa", "450001"),
+        ("Dhar", "Dhar", "454001"), ("Manawar", "Dhar", "454446"),
         ("Dewas", "Dewas", "455001"), ("Sehore", "Sehore", "466001"),
-        ("Ratlam", "Ratlam", "457001"), ("Sagar", "Sagar", "470001"),
+        ("Ashta", "Sehore", "466116"), ("Ratlam", "Ratlam", "457001"),
+        ("Jaora", "Ratlam", "457226"), ("Sagar", "Sagar", "470001"),
     ]),
     ("Maharashtra", 0.140, [
         ("Mumbai", "Mumbai City", "400001"), ("Pune", "Pune", "411001"),
@@ -150,7 +155,7 @@ def _region(rng: random.Random) -> tuple[str, str, str, str]:
     else:
         country = _weighted_choice(rng, [(c, w) for c, w, _ in COUNTRIES])
         cities = next(city_list for name, _, city_list in COUNTRIES if name == country)
-        state = f"{country} — Overseas"
+        state = "International"
     city, district, pincode = rng.choice(cities)
     return country, state, city, district, pincode
 

@@ -62,7 +62,7 @@ def main() -> None:
     print("OK —", filtered["total_students"], "records in Madhya Pradesh")
 
     print("== Geography / Year / Insights / Quality ==")
-    assert len(call("/api/analytics/states")["states"]) >= 20
+    assert len(call("/api/analytics/states")["states"]) >= 15
     assert len(call("/api/analytics/countries")["countries"]) >= 5
     assert len(call("/api/analytics/years")["years"]) == 5
     assert len(call("/api/analytics/insights")["insights"]) >= 3

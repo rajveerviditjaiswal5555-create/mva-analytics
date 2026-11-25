@@ -3,8 +3,9 @@ import { useApp } from '../store'
 import { api } from '../api'
 import Filters from '../components/Filters'
 import RankTable from '../components/RankTable'
-import { BarDistribution, DonutChart, StackedYearChart } from '../components/Charts'
+import { BarDistribution, RankedBars, StackedYearChart } from '../components/Charts'
 import IndiaMap from '../components/IndiaMap'
+import CountryDonut from '../components/CountryDonut'
 import type { CountryInfo, StateInfo } from '../types'
 
 export default function Geography() {
@@ -50,12 +51,12 @@ export default function Geography() {
         <div className="card">
           <h3 className="card-title">Top 12 States</h3>
           <p className="card-sub">Bar chart with percentage share</p>
-          <BarDistribution data={states.map(s => ({ name: s.state, students: s.students, percentage: s.percentage }))} max={12} height={320} />
+          <RankedBars data={states.map(s => ({ name: s.state, students: s.students, percentage: s.percentage }))} max={12} height={340} />
         </div>
         <div className="card">
           <h3 className="card-title">Country Distribution</h3>
           <p className="card-sub">Donut chart of represented countries</p>
-          <DonutChart data={countries.map(c => ({ name: c.country, students: c.students, percentage: c.percentage }))} max={10} height={320} />
+          <CountryDonut data={countries.map(c => ({ name: c.country, students: c.students, percentage: c.percentage }))} height={320} />
         </div>
         <div className="card">
           <h3 className="card-title">State-wise Growth Over Time</h3>

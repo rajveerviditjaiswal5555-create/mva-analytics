@@ -7,6 +7,7 @@ import { ToastProvider } from './components/Toast'
 import LoadingSkeleton from './components/LoadingSkeleton'
 import Assistant from './components/Assistant'
 import Backdrop from './components/Backdrop'
+import Motion from './components/Motion'
 
 document.documentElement.setAttribute('data-theme', localStorage.getItem('mva_theme') === 'light' ? 'light' : 'dark')
 import Landing from './pages/Landing'
@@ -81,6 +82,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
       <Backdrop />
+      <Motion />
       <ToastProvider>
         <AppProvider>
           <Router />

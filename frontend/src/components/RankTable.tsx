@@ -21,6 +21,7 @@ export default function RankTable({ data, title, emptyLabel = 'No records' }: {
   }, [data, sort, asc])
 
   const max = Math.max(1, ...data.map(d => d.students))
+  const showDistrict = data.some(d => d.district)
   const click = (key: SortKey) => {
     if (sort === key) setAsc(!asc)
     else { setSort(key); setAsc(false) }
@@ -37,17 +38,19 @@ export default function RankTable({ data, title, emptyLabel = 'No records' }: {
             <tr>
               <th onClick={() => click('rank')}>#{arrow('rank')}</th>
               <th onClick={() => click('name')}>{title?.replace('Top 10 ', '') || 'Name'}{arrow('name')}</th>
+              {showDistrict && <th>District</th>}
               <th onClick={() => click('students')} style={{ textAlign: 'right' }}>Students{arrow('students')}</th>
               <th onClick={() => click('percentage')} style={{ textAlign: 'right' }}>Share{arrow('percentage')}</th>
               <th>Distribution</th>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan={5} className="empty">{emptyLabel}</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={showDistrict ? 6 : 5} className="empty">{emptyLabel}</td></tr>}
             {rows.map((row, i) => (
               <tr key={row.name}>
                 <td><span className={`rank-badge ${i < 3 ? 'top' : ''}`}>{(row.rank ?? i + 1)}</span></td>
                 <td style={{ fontWeight: 600 }}>{row.name}</td>
+                {showDistrict && <td style={{ color: 'var(--ink-500)' }}>{row.district || '—'}</td>}
                 <td className="num">{row.students.toLocaleString('en-IN')}</td>
                 <td className="num">{row.percentage.toFixed(1)}%</td>
                 <td style={{ width: '28%' }}>

@@ -5,7 +5,8 @@ import KpiCard from '../components/KpiCard'
 import Filters from '../components/Filters'
 import RankTable from '../components/RankTable'
 import { useReveal } from '../components/Layout'
-import { BarDistribution, DonutChart, ForecastChart, GrowthChart } from '../components/Charts'
+import { BarDistribution, ForecastChart, GrowthChart } from '../components/Charts'
+import CountryDonut from '../components/CountryDonut'
 import AnimatedNumber from '../components/AnimatedNumber'
 import type { Insight } from '../types'
 
@@ -108,7 +109,7 @@ export default function Dashboard() {
         <div className="card reveal">
           <h3 className="card-title">Country Distribution</h3>
           <p className="card-sub">Share of students by country</p>
-          <DonutChart data={ov.top_countries} max={7} />
+          <CountryDonut data={ov.top_countries} height={320} />
         </div>
       </div>
 

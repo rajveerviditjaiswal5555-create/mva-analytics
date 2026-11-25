@@ -120,7 +120,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
               <div className="avatar">{(user?.full_name || 'G').slice(0, 1).toUpperCase()}</div>
               <div className="user-meta">
                 <strong>{user?.full_name || 'Guest'}</strong>
-                <span>{user?.role?.replace('_', ' ') || 'Not signed in'}</span>
+                <span>{user?.role?.replace('_', ' ') || 'Not signed in'} <i className="pulse-dot" style={{ marginLeft: 5 }} /></span>
               </div>
               <button className="btn btn-sm" onClick={() => setConfirmLogout(true)}>Sign out</button>
             </div>

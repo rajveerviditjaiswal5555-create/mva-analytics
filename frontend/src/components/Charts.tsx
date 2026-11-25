@@ -1,10 +1,10 @@
 import {
-  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart,
-  Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, LineChart,
+  Pie, PieChart, ReferenceLine, ReferenceDot, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 import type { ForecastPoint, NamedStat, YearPoint } from '../types'
 
-const PALETTE = ['#2563eb', '#0d9488', '#c9a227', '#7c3aed', '#dc2626', '#0891b2', '#db2777', '#65a30d', '#ea580c', '#4f46e5']
+const PALETTE = ['#6ba3ff', '#2dd4bf', '#f0c75e', '#a78bfa', '#fb7185', '#38bdf8', '#f472b6', '#4ade80', '#fbbf24', '#818cf8']
 
 const tooltipStyle = {
   background: 'var(--surface)', border: '1px solid var(--line)',
@@ -20,17 +20,22 @@ export function GrowthChart({ data, height = 290 }: { data: YearPoint[]; height?
         <AreaChart data={data} margin={{ top: 12, right: 12, left: -18, bottom: 0 }}>
           <defs>
             <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2563eb" stopOpacity={0.32} />
-              <stop offset="100%" stopColor="#2563eb" stopOpacity={0.01} />
+              <stop offset="0%" stopColor="#6ba3ff" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#6ba3ff" stopOpacity={0.01} />
+            </linearGradient>
+            <linearGradient id="growthLine" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#2dd4bf" />
+              <stop offset="100%" stopColor="#6ba3ff" />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 5" vertical={false} stroke="var(--line)" />
+          <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="var(--line)" />
           <XAxis dataKey="year" tickLine={false} axisLine={false} dy={8} />
-          <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} />
+          <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} width={52} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v) => [fmt(Number(v)), 'Students']} />
-          <Area type="monotone" dataKey="students" stroke="#2563eb" strokeWidth={2.6}
-            fill="url(#growthFill)" animationDuration={900} dot={{ r: 4, fill: '#fff', strokeWidth: 2.5, stroke: '#2563eb' }}
-            activeDot={{ r: 6, strokeWidth: 3 }} />
+          {data.length > 0 && <ReferenceDot x={data.at(-1)!.year} y={data.at(-1)!.students} r={6} fill="#f0c75e" stroke="#fff" strokeWidth={2} isFront />}
+          <Area type="monotone" dataKey="students" stroke="url(#growthLine)" strokeWidth={3}
+            fill="url(#growthFill)" animationDuration={1100} dot={{ r: 4, fill: '#0b1220', strokeWidth: 2.5, stroke: '#6ba3ff' }}
+            activeDot={{ r: 7, strokeWidth: 3, fill: '#6ba3ff' }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -42,26 +47,52 @@ export function ForecastChart({ points, height = 320 }: { points: ForecastPoint[
     year: p.year,
     actual: p.actual,
     predicted: p.predicted,
-    lower: p.lower,
-    upper: p.upper,
+    base: p.lower ?? 0,
+    band: p.lower != null && p.upper != null ? Math.max(0, p.upper - p.lower) : 0,
   }))
   const lastActual = points.filter(p => !p.is_forecast).at(-1)?.year
   return (
     <div className="chart-box chart-enter" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 12, right: 14, left: -18, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 5" vertical={false} stroke="var(--line)" />
+        <ComposedChart data={data} margin={{ top: 12, right: 14, left: -10, bottom: 0 }}>
+          <defs>
+            <linearGradient id="bandFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f0c75e" stopOpacity={0.22} />
+              <stop offset="100%" stopColor="#f0c75e" stopOpacity={0.04} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 6" vertical={false} stroke="var(--line)" />
           <XAxis dataKey="year" tickLine={false} axisLine={false} dy={8} />
-          <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} domain={['auto', 'auto']} />
+          <YAxis tickLine={false} axisLine={false} tickFormatter={fmt} domain={['auto', 'auto']} width={52} />
           <Tooltip contentStyle={tooltipStyle} formatter={(v, name) => [fmt(Number(v)), name === 'actual' ? 'Actual students' : 'Predicted (ESTIMATE)']} />
-          <Legend formatter={(v) => v === 'actual' ? 'Historical actual' : 'Forecast estimate'} wrapperStyle={{ fontSize: 11 }} />
-          {lastActual && <ReferenceLine x={lastActual} stroke="#c9a227" strokeDasharray="4 4" label={{ value: 'Forecast →', fontSize: 10, fill: '#b45309', position: 'insideTopRight' }} />}
-          <Line type="monotone" dataKey="actual" stroke="#2563eb" strokeWidth={3}
-            dot={{ r: 3.5, fill: '#2563eb' }} connectNulls animationDuration={900} />
-          <Line type="monotone" dataKey="predicted" stroke="#c9a227" strokeWidth={3} strokeDasharray="7 5"
-            dot={{ r: 3.5, fill: '#c9a227' }} connectNulls animationDuration={1100} />
-        </LineChart>
+          <Legend formatter={(v) => v === 'actual' ? 'Historical actual' : v === 'predicted' ? 'Forecast estimate' : 'Uncertainty range'} wrapperStyle={{ fontSize: 10 }} />
+          {lastActual && <ReferenceLine x={lastActual} stroke="#f0c75e" strokeDasharray="4 4" label={{ value: 'Forecast →', fontSize: 10, fill: '#f0c75e', position: 'insideTopRight' }} />}
+          <Area dataKey="base" stackId="uncertainty" stroke="none" fill="transparent" isAnimationActive={false} legendType="none" tooltipType="none" />
+          <Area dataKey="band" stackId="uncertainty" stroke="none" fill="url(#bandFill)" isAnimationActive={false} name="Uncertainty range" tooltipType="none" />
+          <Line type="monotone" dataKey="actual" stroke="#6ba3ff" strokeWidth={3}
+            dot={{ r: 3.5, fill: '#6ba3ff' }} connectNulls animationDuration={1000} />
+          <Line type="monotone" dataKey="predicted" stroke="#f0c75e" strokeWidth={3} strokeDasharray="7 5"
+            dot={{ r: 3.5, fill: '#f0c75e' }} connectNulls animationDuration={1200} />
+        </ComposedChart>
       </ResponsiveContainer>
+    </div>
+  )
+}
+
+export function RankedBars({ data, height = 320, max = 12 }: { data: NamedStat[]; height?: number; max?: number }) {
+  const items = data.slice(0, max)
+  const top = Math.max(1, ...items.map(d => d.students))
+  return (
+    <div className="chart-box chart-enter ranked-bars" style={{ height }}>
+      {items.map((item, i) => (
+        <div className="rb-row" key={item.name} style={{ animationDelay: `${i * 55}ms` }}>
+          <span className="rb-rank">{String(i + 1).padStart(2, '0')}</span>
+          <span className="rb-name" title={item.name}>{item.name}</span>
+          <span className="rb-track"><b style={{ width: `${(item.students / top) * 100}%`, background: `linear-gradient(90deg, ${PALETTE[i % PALETTE.length]}, ${PALETTE[(i + 2) % PALETTE.length]})`, transitionDelay: `${i * 55}ms` }} /></span>
+          <strong className="rb-value">{fmt(item.students)}</strong>
+          <small className="rb-pct">{item.percentage}%</small>
+        </div>
+      ))}
     </div>
   )
 }
