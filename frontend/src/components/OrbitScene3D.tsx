@@ -4,6 +4,7 @@ import * as THREE from 'three'
 interface Props {
   onSelect: () => void
   stats: { years: number; students: number; regions: number }
+  orbitBodies: Array<{ name: string; sub: string; moons: string[] }>
 }
 
 type Body = {
@@ -18,7 +19,7 @@ type Body = {
 
 function textSprite(text: string, sub = '', color = '#ffffff', width = 320) {
   const c = document.createElement('canvas')
-  c.width = width
+  c.width = Math.max(width, text.length * 24 + 48)
   c.height = sub ? 110 : 96
   const ctx = c.getContext('2d')!
   ctx.clearRect(0, 0, c.width, c.height)
@@ -54,8 +55,8 @@ function glowTexture() {
   return new THREE.CanvasTexture(c)
 }
 
-/** Real WebGL 3D system: MVA sun, AI-company planets and their model moons. */
-export default function OrbitScene3D({ onSelect, stats }: Props) {
+/** Real WebGL 3D system: MVA sun, state planets and their district moons. */
+export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
   const hostRef = useRef<HTMLDivElement>(null)
   const tipRef = useRef<HTMLDivElement>(null)
   const selectRef = useRef(onSelect)
@@ -67,7 +68,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200)
-    camera.position.set(0, 10, 40)
+    camera.position.set(0, 10, 48)
     camera.lookAt(0, 0, 0)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
@@ -88,20 +89,25 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     scene.add(system)
 
     // Sun — glowing violet sphere with an always-facing MVA monogram.
-    const sunGeo = new THREE.SphereGeometry(2.1, 48, 48)
+    const sunGeo = new THREE.SphereGeometry(1.75, 48, 48)
     const sunMat = new THREE.MeshStandardMaterial({
       color: 0x8b5cf6, emissive: 0x5b21b6, emissiveIntensity: 0.85, roughness: 0.32, metalness: 0.12,
     })
     const sun = new THREE.Mesh(sunGeo, sunMat)
     system.add(sun)
     const monogram = textSprite('M', '', '#ffffff', 256)
-    monogram.scale.set(3.8, 3.8, 1)
-    monogram.position.set(0, 0.05, 2.1)
+    monogram.scale.set(3.2, 3.2, 1)
+    monogram.position.set(0, 0.04, 1.78)
     system.add(monogram)
+
+    const sunLabel = textSprite('MACRO VISION ACADEMY', 'BURHANPUR · MP', '#ffffff', 420)
+    sunLabel.scale.set(5.6, 1.6, 1)
+    sunLabel.position.set(0, -2.9, 0)
+    system.add(sunLabel)
 
     const glowMat = new THREE.SpriteMaterial({ map: glowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })
     const glow = new THREE.Sprite(glowMat)
-    glow.scale.set(13, 13, 1)
+    glow.scale.set(11, 11, 1)
     system.add(glow)
 
     // Starfield.
@@ -119,18 +125,25 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xc4b5fd, size: 0.13, transparent: true, opacity: 0.75, sizeAttenuation: true }))
     scene.add(stars)
 
-    const SPECS = [
-      { name: 'Groq', sub: 'Qwen 3.8 27B · Llama 3.3', color: 0xfb923c, radius: 6.5, size: 1.15, speed: 0.34, phase: 0.3, moons: 2 },
-      { name: 'OpenAI', sub: 'GPT-4o · o3', color: 0x34d399, radius: 9.5, size: 0.98, speed: -0.24, phase: 2.0, moons: 2 },
-      { name: 'Anthropic', sub: 'Claude 3.7', color: 0xf0c75e, radius: 12.3, size: 0.82, speed: 0.18, phase: 3.6, moons: 1 },
-      { name: 'Google', sub: 'Gemini 2.5', color: 0x60a5fa, radius: 15.0, size: 0.7, speed: -0.13, phase: 5.1, moons: 1 },
+    // Orbit geometry only — names and moons come from the live dataset.
+    const ORBITS = [
+      { color: 0xa78bfa, radius: 6.0, size: 0.78, speed: 0.30, phase: 0.2 },
+      { color: 0x22d3ee, radius: 8.6, size: 0.70, speed: -0.23, phase: 1.4 },
+      { color: 0x34d399, radius: 11.2, size: 0.62, speed: 0.18, phase: 2.7 },
+      { color: 0xf0c75e, radius: 13.8, size: 0.56, speed: -0.14, phase: 4.0 },
+      { color: 0xfb7185, radius: 16.2, size: 0.50, speed: 0.11, phase: 5.2 },
+      { color: 0x60a5fa, radius: 18.0, size: 0.44, speed: -0.09, phase: 0.8 },
     ]
 
     const bodies: Body[] = []
     const pickables: THREE.Mesh[] = []
-    const disposables: Array<THREE.BufferGeometry | THREE.Material | THREE.Texture> = [sunGeo, sunMat, starGeo, stars.material as THREE.Material, glowMat.map!, glowMat]
+    const disposables: Array<THREE.BufferGeometry | THREE.Material | THREE.Texture> = [
+      sunGeo, sunMat, starGeo, stars.material as THREE.Material, glowMat.map!, glowMat,
+      monogram.material.map!, monogram.material, sunLabel.material.map!, sunLabel.material,
+    ]
 
-    SPECS.forEach(spec => {
+    ORBITS.slice(0, orbitBodies.length).forEach((spec, i) => {
+      const data = orbitBodies[i]
       // A pivot at the origin guarantees a perfectly stable circular orbit.
       const pivot = new THREE.Object3D()
       pivot.rotation.y = spec.phase
@@ -143,10 +156,19 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
       })
       const mesh = new THREE.Mesh(geo, mat)
       mesh.position.set(spec.radius, 0, 0)
-      mesh.userData.bodyIndex = bodies.length
+      const bodyIndex = bodies.length
+      mesh.userData.bodyIndex = bodyIndex
       pivot.add(mesh)
-      pickables.push(mesh)
       disposables.push(geo, mat)
+
+      // Invisible, larger proxy keeps small planets easy to hover.
+      const pickGeo = new THREE.SphereGeometry(spec.size * 2.6, 12, 12)
+      const pickMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false })
+      const pick = new THREE.Mesh(pickGeo, pickMat)
+      pick.userData.bodyIndex = bodyIndex
+      mesh.add(pick)
+      pickables.push(pick)
+      disposables.push(pickGeo, pickMat)
 
       // Orbit guide in the same XZ plane as the pivot.
       const points: THREE.Vector3[] = []
@@ -160,7 +182,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
       system.add(ring)
       disposables.push(ringGeo, ringMat)
 
-      const label = textSprite(spec.name, spec.sub, '#ffffff')
+      const label = textSprite(data.name, `${data.sub}${data.moons.length ? ` · ${data.moons.join(', ')}` : ''}`, '#ffffff')
       label.scale.set(3.6, 1.24, 1)
       label.position.set(0, spec.size + 1.35, 0)
       label.visible = false
@@ -170,7 +192,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
 
       // Moons orbit their own planet via independent pivots.
       const moons: THREE.Object3D[] = []
-      for (let j = 0; j < spec.moons; j++) {
+      for (let j = 0; j < Math.min(data.moons.length, 2); j++) {
         const moonPivot = new THREE.Object3D()
         moonPivot.rotation.y = j * 2.1
         mesh.add(moonPivot)
@@ -183,7 +205,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
         disposables.push(mGeo, mMat)
       }
 
-      bodies.push({ pivot, mesh, label, moons, name: spec.name, sub: spec.sub, baseColor: new THREE.Color(spec.color) })
+      bodies.push({ pivot, mesh, label, moons, name: data.name, sub: `${data.sub}${data.moons.length ? ` · ${data.moons.join(', ')}` : ''}`, baseColor: new THREE.Color(spec.color) })
     })
 
     // Interaction: drag orbit, pointer parallax, raycast hover, click to open.
@@ -193,7 +215,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     let dragging = false
     let lastX = 0
     let targetTilt = -0.14
-    let zoom = 40
+    let zoom = 48
 
     const setPointer = (e: PointerEvent) => {
       const r = renderer.domElement.getBoundingClientRect()
@@ -219,7 +241,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     const onClick = () => { if (hovered) selectRef.current() }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.012, 28, 50)
+      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.012, 34, 60)
     }
     const canvas = renderer.domElement
     canvas.addEventListener('pointerdown', onDown)
@@ -249,7 +271,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
       if (!reduced) t += dt / 1000
 
       bodies.forEach((body, i) => {
-        body.pivot.rotation.y = SPECS[i].phase + t * SPECS[i].speed
+        body.pivot.rotation.y = ORBITS[i].phase + t * ORBITS[i].speed
         body.moons.forEach((moonPivot, j) => {
           moonPivot.rotation.y = t * (j % 2 ? -0.9 : 1.15) + j * 2.1
         })
@@ -298,7 +320,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
       renderer.dispose()
       canvas.remove()
     }
-  }, [])
+  }, [orbitBodies])
 
   return (
     <div className="orbit3d">

@@ -17,8 +17,28 @@ const FEATURES = [
 
 export default function Landing({ onLogin }: { onLogin: () => void }) {
   const [ov, setOv] = useState<Overview | null>(null)
+  const [orbitBodies, setOrbitBodies] = useState<Array<{ name: string; sub: string; moons: string[] }>>([])
   useReveal([ov])
   useEffect(() => { api.overview({}).then(setOv).catch(() => undefined) }, [])
+
+  // Planet names and their district moons come from the active dataset, never hard-coded.
+  useEffect(() => {
+    if (!ov?.top_states?.length) return
+    let cancelled = false
+    Promise.all(ov.top_states.slice(0, 6).map(async s => {
+      let moons: string[] = []
+      try {
+        const options = await api.filterOptions({ state: s.name })
+        moons = (options.districts || []).slice(0, 2).map(String)
+      } catch { /* keep the state without moons */ }
+      return {
+        name: s.name,
+        sub: `${s.students.toLocaleString('en-IN')} students · ${s.percentage}%`,
+        moons,
+      }
+    })).then(list => { if (!cancelled) setOrbitBodies(list) })
+    return () => { cancelled = true }
+  }, [ov])
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 
@@ -62,7 +82,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           </div>
         </div>
         <div className="hero-visual">
-          <OrbitScene3D onSelect={onLogin} stats={{
+          <OrbitScene3D onSelect={onLogin} orbitBodies={orbitBodies} stats={{
             years: ov?.yearly?.length ?? 5,
             students: ov?.total_students ?? 0,
             regions: ov?.states_count ?? 0,
