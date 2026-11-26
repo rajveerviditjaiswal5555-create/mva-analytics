@@ -21,24 +21,36 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
   useReveal([ov])
   useEffect(() => { api.overview({}).then(setOv).catch(() => undefined) }, [])
 
-  // Planet names and their district moons come from the active dataset, never hard-coded.
+  // Every state and country in the dataset becomes a planet; real districts/cities become moons.
   useEffect(() => {
-    if (!ov?.top_states?.length) return
     let cancelled = false
-    Promise.all(ov.top_states.slice(0, 6).map(async s => {
-      let moons: string[] = []
-      try {
-        const options = await api.filterOptions({ state: s.name })
-        moons = (options.districts || []).slice(0, 2).map(String)
-      } catch { /* keep the state without moons */ }
-      return {
-        name: s.name,
-        sub: `${s.students.toLocaleString('en-IN')} students · ${s.percentage}%`,
-        moons,
-      }
-    })).then(list => { if (!cancelled) setOrbitBodies(list) })
+    const load = async () => {
+      const [stateData, countryData] = await Promise.all([api.states({}), api.countries({})])
+      const states = stateData.states || []
+      const countries = countryData.countries || []
+      const list = await Promise.all([
+        ...states.map(async s => {
+          let moons: string[] = []
+          try {
+            const options = await api.filterOptions({ state: s.state })
+            moons = (options.districts || []).slice(0, 2).map(String)
+          } catch { /* state still gets a planet */ }
+          return { name: s.state, sub: `${s.students.toLocaleString('en-IN')} students · ${s.percentage}%`, moons }
+        }),
+        ...countries.map(async c => {
+          let moons: string[] = []
+          try {
+            const options = await api.filterOptions({ country: c.country })
+            moons = (options.cities || []).slice(0, 2).map(String)
+          } catch { /* country still gets a planet */ }
+          return { name: c.country, sub: `${c.students.toLocaleString('en-IN')} students · ${c.percentage}%`, moons }
+        }),
+      ])
+      if (!cancelled) setOrbitBodies(list)
+    }
+    load().catch(() => undefined)
     return () => { cancelled = true }
-  }, [ov])
+  }, [])
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 
