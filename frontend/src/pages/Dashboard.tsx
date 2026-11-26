@@ -83,11 +83,14 @@ export default function Dashboard() {
         </div>
         <div className="kpi-stack">
           <KpiCard compact label={`${ov.current_year} registrations`} value={ov.current_year_students} icon={<Icon name="chart" size={13} />}
+            color="#4f8cff" tint="rgba(79,140,255,.18)"
             foot={<span style={{ color: growthColor(ov.yoy_growth) }}>{ov.yoy_growth >= 0 ? '▲' : '▼'} {Math.abs(ov.yoy_growth)}% vs {ov.previous_year}</span>} index={1} />
           <KpiCard compact label="Year-over-year growth" value={ov.yoy_growth} icon={<Icon name="trend" size={13} />}
+            color={ov.yoy_growth >= 0 ? '#34d399' : '#fb7185'} tint={ov.yoy_growth >= 0 ? 'rgba(52,211,153,.16)' : 'rgba(251,113,133,.16)'}
             decimals={1} suffix="%" foot={`${ov.previous_year_students.toLocaleString('en-IN')} → ${ov.current_year_students.toLocaleString('en-IN')}`} index={2} />
           <KpiCard compact label={`${fc.next_year ?? ov.current_year + 1} forecast`} value={fc.next_year_predicted ?? 0} icon={<Icon name="sparkles" size={13} />}
-            foot={<span className="pill blue">ESTIMATE</span>} index={3} />
+            color="#f0c75e" tint="rgba(240,199,94,.16)"
+            foot={<span className="pill amber">ESTIMATE</span>} index={3} />
         </div>
       </div>
 

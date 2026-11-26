@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { NamedStat } from '../types'
 
-const COLORS = ['#0d99ff', '#9747ff', '#1abcfe', '#0acf83', '#ffcd29', '#ff7262', '#b07cff', '#5cbcff', '#8ce0c2', '#a3a3a3']
+const COLORS = ['#6ba3ff', '#2dd4bf', '#f0c75e', '#a78bfa', '#fb7185', '#38bdf8', '#f472b6', '#4ade80', '#fbbf24', '#818cf8']
 const R = 74, C = 2 * Math.PI * R
 
 /** Custom SVG donut with JS-driven draw animation, hover lift and a live tooltip. */
