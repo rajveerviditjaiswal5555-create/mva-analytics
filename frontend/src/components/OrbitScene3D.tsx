@@ -70,6 +70,44 @@ function dotTexture() {
   return new THREE.CanvasTexture(c)
 }
 
+function planetTexture(hex: number, seed: number) {
+  const c = document.createElement('canvas')
+  c.width = c.height = 128
+  const ctx = c.getContext('2d')!
+  const color = new THREE.Color(hex)
+  const r = Math.round(color.r * 255)
+  const g = Math.round(color.g * 255)
+  const b = Math.round(color.b * 255)
+  const light = `rgb(${Math.min(255, r + 62)},${Math.min(255, g + 62)},${Math.min(255, b + 62)})`
+  const mid = `rgb(${r},${g},${b})`
+  const dark = `rgb(${Math.floor(r * 0.3)},${Math.floor(g * 0.3)},${Math.floor(b * 0.3)})`
+  const grad = ctx.createRadialGradient(44, 40, 3, 64, 64, 94)
+  grad.addColorStop(0, light)
+  grad.addColorStop(0.55, mid)
+  grad.addColorStop(1, dark)
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 128, 128)
+
+  let s = seed * 97 + 13
+  const rand = () => { s = (s * 16807) % 2147483647; return s / 2147483647 }
+  for (let i = 0; i < 24; i++) {
+    ctx.globalAlpha = 0.04 + rand() * 0.07
+    ctx.fillStyle = i % 2 ? '#ffffff' : '#000000'
+    ctx.fillRect(0, rand() * 128, 128, 1 + rand() * 6)
+  }
+  for (let i = 0; i < 80; i++) {
+    ctx.globalAlpha = 0.05 + rand() * 0.12
+    ctx.fillStyle = rand() > 0.5 ? '#ffffff' : '#000000'
+    ctx.beginPath()
+    ctx.arc(rand() * 128, rand() * 128, 1 + rand() * 5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.globalAlpha = 1
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
 const ACCENTS = [0xa78bfa, 0x22d3ee, 0xf0abfc, 0x34d399, 0xfbbf24, 0x60a5fa, 0xfb7185, 0x818cf8]
 const ORBITS = [
   { radius: 6.2, speed: 0.30, phase: 0.2 },
@@ -93,7 +131,10 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 220)
-    camera.position.set(0, 9, 52)
+    const POV = Math.PI / 4
+    let zoom = 51
+    let dist = 51
+    camera.position.set(0, Math.sin(POV) * dist, Math.cos(POV) * dist)
     camera.lookAt(0, 0, 0)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
@@ -116,7 +157,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     scene.add(rimB)
 
     const system = new THREE.Group()
-    system.rotation.x = -0.1
+    system.rotation.x = 0
     scene.add(system)
     const disposables: Array<THREE.BufferGeometry | THREE.Material | THREE.Texture> = []
     const dotTex = dotTexture()
@@ -204,20 +245,25 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       system.add(pivot)
 
       // Small dark provider badge.
-      const badgeGeo = new THREE.SphereGeometry(0.38, 20, 20)
-      const badgeMat = new THREE.MeshPhysicalMaterial({ color: 0x111116, metalness: 0.8, roughness: 0.25, clearcoat: 1 })
+      const badgeGeo = new THREE.SphereGeometry(0.55, 28, 28)
+      const surfaceTex = planetTexture(ACCENTS[i % ACCENTS.length], i + 1)
+      const badgeMat = new THREE.MeshStandardMaterial({
+        map: surfaceTex, color: 0xffffff, roughness: 0.74, metalness: 0.06,
+        emissive: accent.clone().multiplyScalar(0.06),
+      })
       const badge = new THREE.Mesh(badgeGeo, badgeMat)
       badge.position.set(spec.radius, 0, 0)
       badge.userData.bodyIndex = bodies.length
       pivot.add(badge)
-      disposables.push(badgeGeo, badgeMat)
+      disposables.push(badgeGeo, badgeMat, surfaceTex)
 
-      // Tiny accent core, visible like a provider mark.
-      const coreGeo = new THREE.SphereGeometry(0.15, 14, 14)
-      const coreMat = new THREE.MeshBasicMaterial({ color: accent })
-      const core = new THREE.Mesh(coreGeo, coreMat)
-      badge.add(core)
-      disposables.push(coreGeo, coreMat)
+      // Atmospheric halo gives the planet depth against the dark canvas.
+      const atmMat = new THREE.SpriteMaterial({ map: dotTex, color: accent, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false })
+      const atm = new THREE.Sprite(atmMat)
+      atm.scale.set(1.9, 1.9, 1)
+      atm.position.z = -0.12
+      badge.add(atm)
+      disposables.push(atmMat)
 
       // Invisible hover proxy.
       const pickGeo = new THREE.SphereGeometry(0.95, 12, 12)
@@ -280,8 +326,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     let hovered: Body | null = null
     let dragging = false
     let lastX = 0
-    let targetTilt = -0.1
-    let zoom = 52
+    let targetTilt = 0
 
     const setPointer = (e: PointerEvent) => {
       const r = renderer.domElement.getBoundingClientRect()
@@ -295,7 +340,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         system.rotation.y += (e.clientX - lastX) * 0.006
         lastX = e.clientX
       } else {
-        targetTilt = -0.1 + pointer.y * 0.1
+        targetTilt = pointer.y * 0.06
       }
       const tip = tipRef.current
       if (tip) {
@@ -307,7 +352,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     const onClick = () => { if (hovered) selectRef.current() }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.014, 36, 64)
+      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.014, 36, 70)
     }
     const canvas = renderer.domElement
     canvas.addEventListener('pointerdown', onDown)
@@ -342,7 +387,8 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         body.mesh.scale.setScalar(hovered === body ? 1.28 : 1)
       })
       system.rotation.x += (targetTilt - system.rotation.x) * 0.05
-      camera.position.z += (zoom - camera.position.z) * 0.08
+      dist += (zoom - dist) * 0.08
+      camera.position.set(0, Math.sin(POV) * dist, Math.cos(POV) * dist)
       camera.lookAt(0, 0, 0)
       shell.rotation.y = t * 0.08
       torus.rotation.z = t * 0.04
