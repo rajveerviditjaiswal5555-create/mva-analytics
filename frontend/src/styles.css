@@ -394,7 +394,7 @@ table.data td.num { text-align: right; }
 .lnav-actions { display: flex; gap: 8px; align-items: center; }
 .lnav .btn-ghost { border-color: var(--line); color: var(--ink-700); background: transparent; }
 .hero {
-  min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr; gap: 40px; align-items: center;
+  min-height: 100vh; display: grid; grid-template-columns: .92fr 1.08fr; gap: 30px; align-items: center;
   padding: 110px clamp(20px, 5vw, 72px) 60px;
   background:
     radial-gradient(circle at 78% 16%, rgba(13, 153, 255, .16), transparent 42%),
@@ -778,9 +778,9 @@ table.data td.num { text-align: right; }
 .or-mode .lnav-links { color: #a1a1aa; }
 .or-mode .lnav-links a:hover { color: #c4b5fd; }
 .or-mode .hero {
-  background: radial-gradient(circle at 78% 18%, rgba(139,92,246,.30), transparent 45%),
-              radial-gradient(circle at 12% 82%, rgba(34,211,238,.14), transparent 40%),
-              linear-gradient(150deg, #050506, #0a0a0b 55%, #121018);
+  background: radial-gradient(circle at 78% 18%, rgba(124,92,255,.14), transparent 45%),
+              radial-gradient(circle at 12% 82%, rgba(34,211,238,.07), transparent 40%),
+              linear-gradient(150deg, #050506, #09090b 55%, #101014);
 }
 .or-mode .hero-badge { border-color: rgba(167,139,250,.45); color: #c4b5fd; background: rgba(139,92,246,.12); }
 .or-mode .hero h1 em {
@@ -809,7 +809,7 @@ table.data td.num { text-align: right; }
 .or-mode .footer h4 { color: #fff; }
 
 /* ---------- 3D data universe (landing hero) ---------- */
-.or-mode .hero-visual { width: 100%; max-width: 560px; }
+.or-mode .hero-visual { width: 100%; max-width: 680px; }
 .orbit-scene {
   position: relative; width: 100%; max-width: 520px; aspect-ratio: 1;
   margin: 0 auto; perspective: 1000px; cursor: grab; touch-action: pan-y; user-select: none;
@@ -883,7 +883,7 @@ table.data td.num { text-align: right; }
 .orbit-caption-hint { color: #c4b5fd; border-left: 1px solid #33333b; padding-left: 12px; }
 
 /* ---------- WebGL 3D universe ---------- */
-.orbit3d { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1; margin: 0 auto; }
+.orbit3d { position: relative; width: 100%; max-width: 680px; aspect-ratio: 1; margin: 0 auto; }
 .orbit3d-host { position: absolute; inset: 0; }
 .orbit3d-tip {
   position: absolute; z-index: 5; pointer-events: none; opacity: 0; transform: translateY(4px);
