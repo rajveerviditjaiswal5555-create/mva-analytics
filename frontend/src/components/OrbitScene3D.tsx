@@ -306,10 +306,21 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         const moonPivot = new THREE.Object3D()
         moonPivot.rotation.y = j * 2.1
         badge.add(moonPivot)
-        const mGeo = new THREE.SphereGeometry(0.12 + j * 0.03, 12, 12)
-        const mMat = new THREE.MeshBasicMaterial({ color: accent })
+        const orbitRadius = 1.15 + j * 0.4
+        const pathPoints: THREE.Vector3[] = []
+        for (let k = 0; k <= 48; k++) {
+          const a = (k / 48) * Math.PI * 2
+          pathPoints.push(new THREE.Vector3(Math.cos(a) * orbitRadius, 0, Math.sin(a) * orbitRadius))
+        }
+        const pathGeo = new THREE.BufferGeometry().setFromPoints(pathPoints)
+        const pathMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.3 })
+        badge.add(new THREE.LineLoop(pathGeo, pathMat))
+        disposables.push(pathGeo, pathMat)
+
+        const mGeo = new THREE.SphereGeometry(0.19 + j * 0.04, 14, 14)
+        const mMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
         const moon = new THREE.Mesh(mGeo, mMat)
-        moon.position.set(0.72 + j * 0.25, 0, 0)
+        moon.position.set(orbitRadius, 0, 0)
         moonPivot.add(moon)
         moons.push(moonPivot)
         disposables.push(mGeo, mMat)
@@ -386,7 +397,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         body.pivot.rotation.y = body.basePhase + t * body.speed
         body.swarm.rotation.y = t * 0.22
         body.moons.forEach((moonPivot, j) => {
-          moonPivot.rotation.y = t * (j % 2 ? -1.15 : 1.4) + j * 2.1
+          moonPivot.rotation.y = t * (j % 2 ? -2.2 : 2.6) + j * 2.1
         })
         body.mesh.scale.setScalar(hovered === body ? 1.28 : 1)
       })

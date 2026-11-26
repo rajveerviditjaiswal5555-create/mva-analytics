@@ -412,8 +412,8 @@ table.data td.num { text-align: right; }
 .hero p.lead { font-size: 15px; line-height: 1.65; color: var(--ink-500); max-width: 540px; }
 .hero-actions { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
 .hero-actions .btn { height: 36px; padding: 0 18px; font-size: 12px; }
-.hero-stats { display: flex; gap: 28px; margin-top: 36px; flex-wrap: wrap; }
-.hero-stats div span { display: block; font-size: 23px; font-weight: 650; letter-spacing: -.03em; color: var(--ink-900); font-variant-numeric: tabular-nums; }
+.hero-stats { display: flex; gap: 16px; margin-top: 36px; flex-wrap: wrap; }
+.hero-stats div span { display: block; font-size: 21px; font-weight: 650; letter-spacing: -.03em; color: var(--ink-900); font-variant-numeric: tabular-nums; }
 .hero-stats div small { font-size: 10px; color: var(--ink-400); text-transform: uppercase; letter-spacing: .6px; }
 .hero-visual { position: relative; }
 .hero-card {
