@@ -4,6 +4,7 @@ import { useReveal } from '../components/Layout'
 import { api } from '../api'
 import type { Overview } from '../types'
 import AnimatedNumber from '../components/AnimatedNumber'
+import OrbitScene from '../components/OrbitScene'
 
 const FEATURES = [
   { icon: '◈', title: 'Entrance Analytics', text: 'Analyse registration trends across five academic years with every metric computed directly from the data.' },
@@ -61,19 +62,11 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           </div>
         </div>
         <div className="hero-visual">
-          <div className="hero-card">
-            <div className="hc-title">Five-Year Registration Trend</div>
-            <div className="hc-main"><AnimatedNumber value={ov?.current_year_students ?? 0} /></div>
-            <div style={{ fontSize: 12, color: 'var(--ink-500)' }}>students in {ov?.current_year ?? 2026}
-              <span style={{ color: 'var(--green)', marginLeft: 8 }}>{ov ? `${ov.yoy_growth >= 0 ? '+' : ''}${ov.yoy_growth}% YoY` : ''}</span>
-            </div>
-            <div className="hero-mini">
-              {(ov?.yearly ?? Array.from({ length: 5 }, (_, i) => ({ year: 2022 + i, students: 0, change: 0, growth: 0, cumulative: 0 }))).map((item, i) => (
-                <i key={i} style={{ height: `${item.students ? (item.students / Math.max(1, ...(ov?.yearly ?? []).map(y => y.students))) * 100 : 20 + i * 12}%`, animationDelay: `${i * 120}ms` }} title={`${item.year}: ${item.students}`} />
-              ))}
-            </div>
-            <div className="hero-footnote">Aggregated statistics only · No individual student records shown publicly</div>
-          </div>
+          <OrbitScene onSelect={onLogin} stats={{
+            years: ov?.yearly?.length ?? 5,
+            students: ov?.total_students ?? 0,
+            regions: ov?.states_count ?? 0,
+          }} />
         </div>
       </header>
 
