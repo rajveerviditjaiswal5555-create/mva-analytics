@@ -4,7 +4,7 @@ import { useReveal } from '../components/Layout'
 import { api } from '../api'
 import type { Overview } from '../types'
 import AnimatedNumber from '../components/AnimatedNumber'
-import OrbitScene from '../components/OrbitScene'
+import OrbitScene3D from '../components/OrbitScene3D'
 
 const FEATURES = [
   { icon: '◈', title: 'Entrance Analytics', text: 'Analyse registration trends across five academic years with every metric computed directly from the data.' },
@@ -62,7 +62,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           </div>
         </div>
         <div className="hero-visual">
-          <OrbitScene onSelect={onLogin} stats={{
+          <OrbitScene3D onSelect={onLogin} stats={{
             years: ov?.yearly?.length ?? 5,
             students: ov?.total_students ?? 0,
             regions: ov?.states_count ?? 0,

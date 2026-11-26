@@ -809,7 +809,7 @@ table.data td.num { text-align: right; }
 .or-mode .footer h4 { color: #fff; }
 
 /* ---------- 3D data universe (landing hero) ---------- */
-.or-mode .hero-visual { width: 100%; max-width: 540px; }
+.or-mode .hero-visual { width: 100%; max-width: 560px; }
 .orbit-scene {
   position: relative; width: 100%; max-width: 520px; aspect-ratio: 1;
   margin: 0 auto; perspective: 1000px; cursor: grab; touch-action: pan-y; user-select: none;
@@ -881,6 +881,27 @@ table.data td.num { text-align: right; }
 }
 .orbit-caption b { color: #fff; font-weight: 600; }
 .orbit-caption-hint { color: #c4b5fd; border-left: 1px solid #33333b; padding-left: 12px; }
+
+/* ---------- WebGL 3D universe ---------- */
+.orbit3d { position: relative; width: 100%; max-width: 560px; aspect-ratio: 1; margin: 0 auto; }
+.orbit3d-host { position: absolute; inset: 0; }
+.orbit3d-tip {
+  position: absolute; z-index: 5; pointer-events: none; opacity: 0; transform: translateY(4px);
+  transition: opacity .16s, transform .16s;
+  background: rgba(10,10,11,.92); border: 1px solid #35353d; border-radius: 6px; padding: 5px 9px;
+  box-shadow: 0 10px 28px -12px rgba(0,0,0,.95); backdrop-filter: blur(10px); white-space: nowrap;
+}
+.orbit3d-tip.show { opacity: 1; transform: none; }
+.orbit3d-tip b { display: block; color: #fff; font-size: 10px; font-weight: 600; }
+.orbit3d-tip small { display: block; color: #a1a1aa; font-size: 8.5px; margin-top: 1px; }
+.orbit3d-caption {
+  position: absolute; left: 50%; bottom: 8px; z-index: 5; transform: translateX(-50%);
+  display: flex; gap: 12px; align-items: center; white-space: nowrap;
+  background: rgba(16,16,18,.84); border: 1px solid #2f2f36; border-radius: 999px; padding: 6px 12px;
+  font-size: 9.5px; color: #a1a1aa; backdrop-filter: blur(12px); box-shadow: 0 10px 30px -14px rgba(0,0,0,.9);
+}
+.orbit3d-caption b { color: #fff; font-weight: 600; }
+.orbit3d-hint { color: #c4b5fd; border-left: 1px solid #33333b; padding-left: 12px; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
