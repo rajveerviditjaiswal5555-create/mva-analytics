@@ -67,7 +67,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200)
-    camera.position.set(0, 10, 34)
+    camera.position.set(0, 10, 40)
     camera.lookAt(0, 0, 0)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' })
@@ -88,20 +88,20 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     scene.add(system)
 
     // Sun — glowing violet sphere with an always-facing MVA monogram.
-    const sunGeo = new THREE.SphereGeometry(2.35, 48, 48)
+    const sunGeo = new THREE.SphereGeometry(2.1, 48, 48)
     const sunMat = new THREE.MeshStandardMaterial({
       color: 0x8b5cf6, emissive: 0x5b21b6, emissiveIntensity: 0.85, roughness: 0.32, metalness: 0.12,
     })
     const sun = new THREE.Mesh(sunGeo, sunMat)
     system.add(sun)
     const monogram = textSprite('M', '', '#ffffff', 256)
-    monogram.scale.set(4.2, 4.2, 1)
-    monogram.position.set(0, 0.05, 2.34)
+    monogram.scale.set(3.8, 3.8, 1)
+    monogram.position.set(0, 0.05, 2.1)
     system.add(monogram)
 
     const glowMat = new THREE.SpriteMaterial({ map: glowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })
     const glow = new THREE.Sprite(glowMat)
-    glow.scale.set(15, 15, 1)
+    glow.scale.set(13, 13, 1)
     system.add(glow)
 
     // Starfield.
@@ -120,10 +120,10 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     scene.add(stars)
 
     const SPECS = [
-      { name: 'Groq', sub: 'Qwen 3.8 27B · Llama 3.3', color: 0xfb923c, radius: 5.0, size: 1.5, speed: 0.34, phase: 0.3, moons: 2 },
-      { name: 'OpenAI', sub: 'GPT-4o · o3', color: 0x34d399, radius: 7.8, size: 1.25, speed: -0.24, phase: 2.0, moons: 2 },
-      { name: 'Anthropic', sub: 'Claude 3.7', color: 0xf0c75e, radius: 10.2, size: 1.05, speed: 0.18, phase: 3.6, moons: 1 },
-      { name: 'Google', sub: 'Gemini 2.5', color: 0x60a5fa, radius: 12.5, size: 0.9, speed: -0.13, phase: 5.1, moons: 1 },
+      { name: 'Groq', sub: 'Qwen 3.8 27B · Llama 3.3', color: 0xfb923c, radius: 6.5, size: 1.15, speed: 0.34, phase: 0.3, moons: 2 },
+      { name: 'OpenAI', sub: 'GPT-4o · o3', color: 0x34d399, radius: 9.5, size: 0.98, speed: -0.24, phase: 2.0, moons: 2 },
+      { name: 'Anthropic', sub: 'Claude 3.7', color: 0xf0c75e, radius: 12.3, size: 0.82, speed: 0.18, phase: 3.6, moons: 1 },
+      { name: 'Google', sub: 'Gemini 2.5', color: 0x60a5fa, radius: 15.0, size: 0.7, speed: -0.13, phase: 5.1, moons: 1 },
     ]
 
     const bodies: Body[] = []
@@ -174,10 +174,10 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
         const moonPivot = new THREE.Object3D()
         moonPivot.rotation.y = j * 2.1
         mesh.add(moonPivot)
-        const mGeo = new THREE.SphereGeometry(spec.size * (0.22 + j * 0.04), 18, 18)
+        const mGeo = new THREE.SphereGeometry(spec.size * (0.3 + j * 0.05), 18, 18)
         const mMat = new THREE.MeshStandardMaterial({ color: 0xe9d5ff, emissive: spec.color, emissiveIntensity: 0.25, roughness: 0.6 })
         const moon = new THREE.Mesh(mGeo, mMat)
-        moon.position.set(spec.size + 0.85 + j * 0.55, 0.12 * (j % 2 ? 1 : -1), 0)
+        moon.position.set(spec.size + 0.6 + j * 0.45, 0.12 * (j % 2 ? 1 : -1), 0)
         moonPivot.add(moon)
         moons.push(moonPivot)
         disposables.push(mGeo, mMat)
@@ -193,7 +193,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     let dragging = false
     let lastX = 0
     let targetTilt = -0.14
-    let zoom = 34
+    let zoom = 40
 
     const setPointer = (e: PointerEvent) => {
       const r = renderer.domElement.getBoundingClientRect()
@@ -219,7 +219,7 @@ export default function OrbitScene3D({ onSelect, stats }: Props) {
     const onClick = () => { if (hovered) selectRef.current() }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.012, 25, 44)
+      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.012, 28, 50)
     }
     const canvas = renderer.domElement
     canvas.addEventListener('pointerdown', onDown)
