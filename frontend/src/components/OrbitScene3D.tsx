@@ -117,7 +117,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     const logoMat = new THREE.SpriteMaterial({ map: logoTex, transparent: true, depthTest: false })
     const logo = new THREE.Sprite(logoMat)
     logo.scale.set(2.5, 3.0, 1)
-    logo.position.set(0, 0.02, 1.8)
+    logo.position.set(0, 0.42, 1.8)
     system.add(logo)
     disposables.push(logoTex, logoMat)
 
