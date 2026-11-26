@@ -111,12 +111,14 @@ function planetTexture(hex: number, seed: number) {
 
 const ACCENTS = [0xa78bfa, 0x22d3ee, 0xf0abfc, 0x34d399, 0xfbbf24, 0x60a5fa, 0xfb7185, 0x818cf8]
 const ORBITS = [
-  { radius: 6.2, speed: 0.30, phase: 0.2 },
-  { radius: 9.0, speed: -0.24, phase: 1.1 },
-  { radius: 11.8, speed: 0.19, phase: 2.3 },
-  { radius: 14.6, speed: -0.15, phase: 3.4 },
-  { radius: 17.4, speed: 0.12, phase: 4.6 },
+  { radius: 7.5, speed: 0.30, phase: 0.2 },
+  { radius: 10.0, speed: -0.24, phase: 1.1 },
+  { radius: 12.5, speed: 0.19, phase: 2.3 },
+  { radius: 15.0, speed: -0.15, phase: 3.4 },
+  { radius: 17.5, speed: 0.12, phase: 4.6 },
   { radius: 20.0, speed: -0.09, phase: 5.6 },
+  { radius: 22.5, speed: 0.07, phase: 0.9 },
+  { radius: 25.0, speed: -0.06, phase: 2.8 },
 ]
 
 /** OpenRouter-style orbital system: metallic MVA core, thin rings, dotted provider swarms. */
@@ -133,8 +135,8 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 220)
     const POV = (38 * Math.PI) / 180
-    let zoom = 51
-    let dist = 51
+    let zoom = 68
+    let dist = 68
     camera.position.set(0, Math.sin(POV) * dist, Math.cos(POV) * dist)
     camera.lookAt(0, 0, 0)
 
@@ -364,7 +366,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     const onClick = () => { if (hovered) selectRef.current() }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.014, 36, 70)
+      zoom = THREE.MathUtils.clamp(zoom + e.deltaY * 0.014, 48, 92)
     }
     const canvas = renderer.domElement
     canvas.addEventListener('pointerdown', onDown)
