@@ -131,7 +131,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 220)
-    const POV = Math.PI / 4
+    const POV = (38 * Math.PI) / 180
     let zoom = 51
     let dist = 51
     camera.position.set(0, Math.sin(POV) * dist, Math.cos(POV) * dist)
