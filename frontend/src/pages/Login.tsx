@@ -25,7 +25,7 @@ export default function Login() {
   const quick = (u: string, p: string) => { setUsername(u); setPassword(p) }
 
   return (
-    <div className="login-page">
+    <div className="login-page or-mode">
       <div className="login-card">
         <div className="brand-crest">M</div>
         <h2>Administrator Sign In</h2>

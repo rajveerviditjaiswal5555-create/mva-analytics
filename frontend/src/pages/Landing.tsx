@@ -22,7 +22,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 
   return (
-    <div className="landing">
+    <div className="landing or-mode">
       <nav className="lnav">
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <div className="brand-crest">M</div>

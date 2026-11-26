@@ -634,6 +634,7 @@ table.data td.num { text-align: right; }
    OPENROUTER-STYLE DASHBOARD — scoped to the dashboard route only
    ========================================================================== */
 .or-mode {
+  --canvas: #0a0a0b;
   --surface: #101012;
   --surface-soft: #0a0a0b;
   --surface-tint: #18181b;
@@ -761,6 +762,51 @@ table.data td.num { text-align: right; }
 .or-mode .reveal { transform: translateY(14px); }
 .or-mode .reveal.visible { transform: none; }
 .or-mode ::-webkit-scrollbar-thumb { background: #3f3f46; }
+
+/* ---------- OpenRouter purple: sign-in + public landing ---------- */
+.or-mode.login-page { background: radial-gradient(circle at 25% 20%, rgba(139, 92, 246, .22), transparent 45%), linear-gradient(150deg, #050506, #101012); }
+.or-mode .login-card { background: #101012; border-color: #27272a; box-shadow: 0 24px 70px -20px rgba(0,0,0,.9), 0 0 60px -30px rgba(139,92,246,.7); }
+.or-mode .login-card .brand-crest { background: linear-gradient(135deg, #7c5cff, #22d3ee); color: #fff; border: 0; box-shadow: 0 6px 22px -6px rgba(124,92,255,.8); }
+.or-mode .login-card h2 { color: #fff; }
+.or-mode .login-card .sub { color: #a1a1aa; }
+.or-mode .login-error { background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.25); color: #fb7185; }
+.or-mode .demo-creds { border-color: #27272a; color: #a1a1aa; }
+.or-mode .demo-creds code { background: #0a0a0b; border-color: #27272a; color: #d4d4d8; }
+.landing.or-mode { background: #0a0a0b; }
+.or-mode .lnav { background: rgba(10,10,11,.84); border-color: #27272a; color: #fff; }
+.or-mode .lnav .brand-title { color: #fff; }
+.or-mode .lnav-links { color: #a1a1aa; }
+.or-mode .lnav-links a:hover { color: #c4b5fd; }
+.or-mode .hero {
+  background: radial-gradient(circle at 78% 18%, rgba(139,92,246,.30), transparent 45%),
+              radial-gradient(circle at 12% 82%, rgba(34,211,238,.14), transparent 40%),
+              linear-gradient(150deg, #050506, #0a0a0b 55%, #121018);
+}
+.or-mode .hero-badge { border-color: rgba(167,139,250,.45); color: #c4b5fd; background: rgba(139,92,246,.12); }
+.or-mode .hero h1 em {
+  background: linear-gradient(100deg, #c4b5fd, #8b5cf6 55%, #22d3ee);
+  background-size: 180% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: heroGradient 9s ease-in-out infinite;
+}
+.or-mode .hero p.lead { color: #a1a1aa; }
+.or-mode .hero-stats div span { color: #c4b5fd; }
+.or-mode .hero-stats div small { color: #a1a1aa; }
+.or-mode .hero-card { background: linear-gradient(150deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); border-color: #2f2f36; box-shadow: 0 30px 80px -25px rgba(0,0,0,.9), 0 0 70px -30px rgba(139,92,246,.7), inset 0 1px 0 rgba(255,255,255,.08); }
+.or-mode .hero-card .hc-title { color: #a1a1aa; }
+.or-mode .hero-footnote { color: #71717a; }
+.or-mode .hero-mini i { background: linear-gradient(180deg, #a78bfa, rgba(139,92,246,.08)); box-shadow: 0 0 18px -6px rgba(167,139,250,.7); }
+.or-mode .section-kicker { color: #a78bfa; }
+.or-mode .landing-section.alt { background: #0f0f12; }
+.or-mode .landing-section h2, .or-mode .feature h3 { color: #fff; }
+.or-mode .landing-section .intro, .or-mode .feature p { color: #a1a1aa; }
+.or-mode .feature, .or-mode .reach-panel { background: #101012; border-color: #27272a; }
+.or-mode .feature { box-shadow: var(--shadow-sm); }
+.or-mode .feature .fico { background: rgba(139,92,246,.14); color: #a78bfa; }
+.or-mode .public-notice { background: rgba(139,92,246,.12); border-color: rgba(139,92,246,.25); color: #c4b5fd; }
+.or-mode .cta-band { background: linear-gradient(120deg, #7c5cff, #4f46e5); }
+.or-mode .footer { background: #0a0a0b; border-color: #27272a; }
+.or-mode .footer h4 { color: #fff; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
