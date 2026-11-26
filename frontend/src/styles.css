@@ -41,6 +41,16 @@
   --sidebar-w: 236px;
   --card-border: var(--line);
   --glow: 0 0 0 1px rgba(13, 153, 255, .30);
+  --chart-1: #6ba3ff;
+  --chart-2: #2dd4bf;
+  --chart-3: #f0c75e;
+  --chart-4: #a78bfa;
+  --chart-5: #fb7185;
+  --chart-6: #38bdf8;
+  --chart-7: #f472b6;
+  --chart-8: #4ade80;
+  --chart-9: #fbbf24;
+  --chart-10: #818cf8;
 }
 
 [data-theme='dark'] {
@@ -650,6 +660,16 @@ table.data td.num { text-align: right; }
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
   --shadow-md: 0 14px 44px -18px rgba(0, 0, 0, .95);
   --glow: 0 0 42px -12px rgba(139, 92, 246, .55);
+  --chart-1: #a78bfa;
+  --chart-2: #22d3ee;
+  --chart-3: #c4b5fd;
+  --chart-4: #8b5cf6;
+  --chart-5: #fb7185;
+  --chart-6: #38bdf8;
+  --chart-7: #e9d5ff;
+  --chart-8: #34d399;
+  --chart-9: #fbbf24;
+  --chart-10: #a1a1aa;
 }
 .or-mode .sidebar { background: #0a0a0b; border-color: #222226; }
 .or-mode .sidebar-brand, .or-mode .sidebar-footer { border-color: #222226; }
