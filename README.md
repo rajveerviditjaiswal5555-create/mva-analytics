@@ -18,7 +18,7 @@ When an authorised administrator uploads official data via the Admin Panel, the 
 
 ## ✨ Features
 
-**New in this release:** Figma-grade UI system — Inter typography, single blue accent, 1px panels, compact 30px controls, stroke icons and ⌘K page search — with the full motion layer retained (aurora, scroll reveals, count-ups, chart entrances, tilt, ripples, cursor glow, shimmer). Also: interactive India choropleth map, entrance-performance analytics, side-by-side year comparison, four back-tested forecasting models, cascading state → district → city filters, a Prediction Year selector, a data-grounded **AI assistant** (Groq / Qwen 3.8 27B, key stays server-side), vector-chart PDF reports, shareable filter URLs, toasts, skeletons and a guided tour.
+**New in this release:** Figma-grade UI system — Inter typography, single blue accent, 1px panels, compact 30px controls, stroke icons and ⌘K page search — with the full motion layer retained (aurora, scroll reveals, count-ups, chart entrances, tilt, ripples, cursor glow, shimmer). The **Dashboard alone** uses an OpenRouter-inspired dark theme (near-black canvas, violet glow, animated sparkline, section tabs, blur-in charts); every other page keeps the vibrant navy/blue/teal/gold theme. Also: interactive India choropleth map, entrance-performance analytics, side-by-side year comparison, four back-tested forecasting models, cascading state → district → city filters, a Prediction Year selector, a data-grounded **AI assistant** (Groq / Qwen 3.8 27B, key stays server-side), vector-chart PDF reports, shareable filter URLs, toasts, skeletons and a guided tour.
 
 **Synthetic-data disclosure:** a compact `DEMO DATA` pill in the top bar plus one concise explanation on the dashboard — no repeated banners.
 

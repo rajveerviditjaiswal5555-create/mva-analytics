@@ -14,6 +14,7 @@ import type { Insight } from '../types'
 export default function Dashboard() {
   const { overview, insights, quality, filters, setFilters, options, loading, error, refresh, navigate, user } = useApp()
   const [topCities, setTopCities] = useState<Array<{ name: string; district?: string; students: number; percentage: number; rank: number }>>([])
+  const [orTab, setOrTab] = useState('overview')
   useReveal([overview, topCities])
 
   useEffect(() => {
@@ -27,6 +28,15 @@ export default function Dashboard() {
   const fc = ov.forecast
   const growthColor = (n: number) => n >= 0 ? 'var(--green)' : 'var(--red)'
   const maxYear = Math.max(1, ...ov.yearly.map(y => y.students))
+  const count = ov.yearly.length
+  const sparkPoints = ov.yearly.map((y, i) => ({
+    x: count > 1 ? (i / (count - 1)) * 100 : 100,
+    y: 100 - Math.max(8, (y.students / maxYear) * 88),
+  }))
+  const sparkLine = sparkPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+  const sparkArea = `${sparkLine} L100,100 L0,100 Z`
+  const sparkLast = sparkPoints[sparkPoints.length - 1] ?? { x: 100, y: 20 }
+  const goTo = (id: string, tab: string) => { setOrTab(tab); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
 
   return (
     <>
@@ -37,7 +47,20 @@ export default function Dashboard() {
 
       <Filters options={options} filters={filters} onChange={setFilters} />
 
-      <div className="overview-head">
+      <div className="or-tabs">
+        {[
+          { key: 'overview', label: 'Overview', id: 'or-overview' },
+          { key: 'insights', label: 'Insights', id: 'or-insights' },
+          { key: 'analytics', label: 'Analytics', id: 'or-analytics' },
+          { key: 'rankings', label: 'Rankings', id: 'or-rankings' },
+        ].map(tab => (
+          <button key={tab.key} className={orTab === tab.key ? 'active' : ''} onClick={() => goTo(tab.id, tab.key)}>{tab.label}</button>
+        ))}
+        <span className="or-tabs-spacer" />
+        <span className="or-live"><i className="pulse-dot" /> Live · {ov.total_students.toLocaleString('en-IN')} records</span>
+      </div>
+
+      <div className="overview-head" id="or-overview">
         <div>
           <div className="eyebrow">Dataset overview</div>
           <h1>Student analytics</h1>
@@ -71,11 +94,17 @@ export default function Dashboard() {
             </div>
             <div className="kh-badge"><Icon name="users" size={18} /></div>
           </div>
-          <div className="kh-spark">
-            {ov.yearly.map((y, i) => (
-              <i key={y.year} style={{ height: `${Math.max(8, (y.students / maxYear) * 100)}%`, animationDelay: `${i * 90}ms` }} title={`${y.year}: ${y.students.toLocaleString('en-IN')}`} />
-            ))}
-          </div>
+          <svg className="or-spark" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="orSparkFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#a78bfa" stopOpacity=".42" />
+                <stop offset="100%" stopColor="#7c5cff" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path className="or-spark-area" d={sparkArea} fill="url(#orSparkFill)" />
+            <path className="or-spark-line" d={sparkLine} fill="none" stroke="#a78bfa" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+            <circle className="or-spark-dot" cx={sparkLast.x} cy={sparkLast.y} r="2" fill="#fff" stroke="#7c5cff" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+          </svg>
           <div className="kh-foot">
             <span>{ov.yearly[0]?.year ?? '—'} → {ov.yearly.at(-1)?.year ?? '—'}</span>
             <span>{ov.total_students.toLocaleString('en-IN')} records analysed</span>
@@ -102,7 +131,7 @@ export default function Dashboard() {
         <div className="stat-item"><div className="stat-label">5-year growth</div><div className="stat-value" style={{ color: growthColor(ov.five_year_growth) }}>{ov.five_year_growth}%</div><div className="stat-foot" style={{ textTransform: 'capitalize' }}>{ov.trend} trend</div></div>
       </div>
 
-      <div className="section-head reveal">
+      <div className="section-head reveal" id="or-insights">
         <div><h2>AI Insights</h2><p>Automatically generated from the currently selected data — no unsupported claims</p></div>
       </div>
       <div className="insight-list">
@@ -115,7 +144,7 @@ export default function Dashboard() {
         {insights.length === 0 && <div className="note">Apply a filter with sufficient data to generate insights.</div>}
       </div>
 
-      <div className="section-head reveal">
+      <div className="section-head reveal" id="or-analytics">
         <div><h2>Visual Analytics</h2><p>Interactive charts · hover for details</p></div>
       </div>
       <div className="grid chart-grid">
@@ -145,7 +174,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="section-head reveal">
+      <div className="section-head reveal" id="or-rankings">
         <div><h2>Rankings</h2><p>Sortable tables with share of total</p></div>
         <button className="btn btn-sm" onClick={() => navigate('geography')}>Full geographical analysis <Icon name="arrowRight" size={13} /></button>
       </div>

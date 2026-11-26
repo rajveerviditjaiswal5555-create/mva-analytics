@@ -110,7 +110,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
     (!needle || item.label.toLowerCase().includes(needle) || item.group.toLowerCase().includes(needle)))
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${page === 'dashboard' ? 'or-mode' : ''}`}>
       <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
         <div className="sidebar-brand">
           <div className="brand-crest">M</div>
