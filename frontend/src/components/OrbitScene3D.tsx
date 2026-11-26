@@ -248,7 +248,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       system.add(pivot)
 
       // Small dark provider badge.
-      const badgeGeo = new THREE.SphereGeometry(0.55, 28, 28)
+      const badgeGeo = new THREE.SphereGeometry(0.42, 28, 28)
       const surfaceTex = planetTexture(ACCENTS[i % ACCENTS.length], i + 1)
       const badgeMat = new THREE.MeshStandardMaterial({
         map: surfaceTex, color: 0xffffff, roughness: 0.74, metalness: 0.06,
@@ -263,13 +263,13 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       // Atmospheric halo gives the planet depth against the dark canvas.
       const atmMat = new THREE.SpriteMaterial({ map: dotTex, color: accent, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false })
       const atm = new THREE.Sprite(atmMat)
-      atm.scale.set(1.9, 1.9, 1)
+      atm.scale.set(1.5, 1.5, 1)
       atm.position.z = -0.12
       badge.add(atm)
       disposables.push(atmMat)
 
       // Invisible hover proxy.
-      const pickGeo = new THREE.SphereGeometry(0.95, 12, 12)
+      const pickGeo = new THREE.SphereGeometry(0.8, 12, 12)
       const pickMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false })
       const pick = new THREE.Mesh(pickGeo, pickMat)
       pick.userData.bodyIndex = bodies.length
@@ -282,7 +282,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       const swarmPos = new Float32Array(count * 3)
       for (let j = 0; j < count; j++) {
         const a = Math.random() * Math.PI * 2
-        const r = 0.5 + Math.random() * 1.45
+        const r = 0.45 + Math.random() * 1.25
         swarmPos[j * 3] = Math.cos(a) * r
         swarmPos[j * 3 + 1] = (Math.random() - 0.5) * 0.5
         swarmPos[j * 3 + 2] = Math.sin(a) * r
@@ -308,7 +308,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         const moonPivot = new THREE.Object3D()
         moonPivot.rotation.y = j * 2.1
         badge.add(moonPivot)
-        const orbitRadius = 1.15 + j * 0.4
+        const orbitRadius = 0.9 + j * 0.3
         const pathPoints: THREE.Vector3[] = []
         for (let k = 0; k <= 48; k++) {
           const a = (k / 48) * Math.PI * 2
@@ -319,7 +319,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         badge.add(new THREE.LineLoop(pathGeo, pathMat))
         disposables.push(pathGeo, pathMat)
 
-        const mGeo = new THREE.SphereGeometry(0.19 + j * 0.04, 14, 14)
+        const mGeo = new THREE.SphereGeometry(0.14 + j * 0.03, 14, 14)
         const mMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
         const moon = new THREE.Mesh(mGeo, mMat)
         moon.position.set(orbitRadius, 0, 0)
