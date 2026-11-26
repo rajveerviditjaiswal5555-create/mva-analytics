@@ -12,6 +12,7 @@ type Body = {
   mesh: THREE.Mesh
   label: THREE.Sprite
   swarm: THREE.Points
+  moons: THREE.Object3D[]
   name: string
   sub: string
   basePhase: number
@@ -315,7 +316,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       }
 
       bodies.push({
-        pivot, mesh: badge, label, swarm, name: data.name, sub: fullSub,
+        pivot, mesh: badge, label, swarm, moons, name: data.name, sub: fullSub,
         basePhase, speed: spec.speed, accent,
       })
     })
@@ -384,6 +385,9 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       bodies.forEach(body => {
         body.pivot.rotation.y = body.basePhase + t * body.speed
         body.swarm.rotation.y = t * 0.22
+        body.moons.forEach((moonPivot, j) => {
+          moonPivot.rotation.y = t * (j % 2 ? -1.15 : 1.4) + j * 2.1
+        })
         body.mesh.scale.setScalar(hovered === body ? 1.28 : 1)
       })
       system.rotation.x += (targetTilt - system.rotation.x) * 0.05
