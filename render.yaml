@@ -12,6 +12,10 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mva-db
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       # AI assistant key — set the real value in Render dashboard (not in Git).
@@ -27,3 +31,9 @@ services:
         value: "16500"
       - key: SESSION_TTL_HOURS
         value: "12"
+
+databases:
+  - name: mva-db
+    plan: free
+    databaseName: mva
+    user: mva

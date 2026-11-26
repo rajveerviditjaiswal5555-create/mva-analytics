@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BarDistribution, GrowthChart } from '../components/Charts'
 import { useReveal } from '../components/Layout'
 import { api } from '../api'
 import type { Overview } from '../types'
 import AnimatedNumber from '../components/AnimatedNumber'
-import OrbitScene3D from '../components/OrbitScene3D'
+const OrbitScene3D = lazy(() => import('../components/OrbitScene3D'))
 
 const FEATURES = [
   { icon: '◈', title: 'Entrance Analytics', text: 'Analyse registration trends across five academic years with every metric computed directly from the data.' },
@@ -29,7 +29,7 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
       const states = stateData.states || []
       const countries = countryData.countries || []
       const list = await Promise.all([
-        ...states.map(async s => {
+        ...states.filter(s => s.state !== 'International').map(async s => {
           let moons: string[] = []
           try {
             const options = await api.filterOptions({ state: s.state })
@@ -94,11 +94,13 @@ export default function Landing({ onLogin }: { onLogin: () => void }) {
           </div>
         </div>
         <div className="hero-visual">
-          <OrbitScene3D onSelect={onLogin} orbitBodies={orbitBodies} stats={{
-            years: ov?.yearly?.length ?? 5,
-            students: ov?.total_students ?? 0,
-            regions: ov?.states_count ?? 0,
-          }} />
+          <Suspense fallback={<div className="orbit3d-skeleton" aria-label="Loading 3D visual" />}>
+            <OrbitScene3D onSelect={onLogin} orbitBodies={orbitBodies} stats={{
+              years: ov?.yearly?.length ?? 5,
+              students: ov?.total_students ?? 0,
+              regions: ov?.states_count ?? 0,
+            }} />
+          </Suspense>
         </div>
       </header>
 

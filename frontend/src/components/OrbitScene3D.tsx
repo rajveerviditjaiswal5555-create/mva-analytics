@@ -455,6 +455,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         <span><b>{stats.regions}</b> regions</span>
         <span className="orbit3d-hint">drag · hover · scroll</span>
       </div>
+      <div className="orbit3d-legend">planet = state / country · moon = district / city · dots = student sources</div>
     </div>
   )
 }

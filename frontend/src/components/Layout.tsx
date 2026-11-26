@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AuthUser, Page } from '../types'
 import { setToken } from '../api'
 import GuidedTour from './GuidedTour'
+import { useToast } from './Toast'
 import Icon from './Icon'
 import type { IconName } from './Icon'
 
@@ -84,6 +85,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
   const searchRef = useRef<HTMLInputElement>(null)
   useReveal([])
   const [confirmLogout, setConfirmLogout] = useState(false)
+  const { push } = useToast()
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
@@ -200,7 +202,7 @@ export default function Layout({ page, onNavigate, user, onLogout, isDemo, title
             <p style={{ fontSize: 11.5, color: 'var(--ink-500)', margin: '0 0 16px' }}>Your authenticated session will be ended.</p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-sm" onClick={() => setConfirmLogout(false)}>Cancel</button>
-              <button className="btn btn-sm btn-primary" onClick={() => { setToken(null); setConfirmLogout(false); onLogout() }}>Sign out</button>
+              <button className="btn btn-sm btn-primary" onClick={() => { setToken(null); setConfirmLogout(false); onLogout(); push('Signed out successfully', 'success') }}>Sign out</button>
             </div>
           </div>
         </div>

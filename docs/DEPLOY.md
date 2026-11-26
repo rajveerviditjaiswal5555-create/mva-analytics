@@ -29,7 +29,7 @@ A valid HTTPS certificate is issued automatically, so there is no "Your connecti
    ```
 
 3. In Render: **New + → Blueprint** → choose the `mva-analytics` repository → **Apply**.
-   `render.yaml` defines the service name (`mva-analytics`), the Dockerfile build, the health check and the `ALLOWED_ORIGINS` value.
+   `render.yaml` defines the service name (`mva-analytics`), the Dockerfile build, the health check, the `ALLOWED_ORIGINS` value, and a free **PostgreSQL database** (`mva-db`) whose connection string is injected as `DATABASE_URL`.
 
 4. Wait for the build (about 5 minutes). Open `https://mva-analytics.onrender.com`.
 
@@ -65,7 +65,8 @@ https://mva-analytics.onrender.com/#/admin
 1. **Change default passwords** — log in as `superadmin`, go to **Admin → Users**, create your real accounts, then disable/delete the four demo users.
 2. **`SECRET_KEY`** — `render.yaml` uses `generateValue: true`, so a random secret is created automatically. You can override it with your own long random string in Render → Environment.
 3. **AI assistant** — add `AI_API_KEY` in Render → Environment (the value is marked `sync: false` in `render.yaml`, so it is never stored in Git). `AI_BASE_URL` defaults to Groq and `AI_MODEL` to `qwen/qwen3.8-27b`. The key is only used server-side; the browser never sees it.
-4. **Revoke deployment tokens** — delete any Personal Access Token from https://github.com/settings/tokens after deployment. Also rotate the Groq key if it was ever pasted into a chat or shared.
+4. **Security headers** — `backend/main.py` adds CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` and HSTS on HTTPS automatically.
+5. **Revoke deployment tokens** — delete any Personal Access Token from https://github.com/settings/tokens after deployment. Also rotate the Groq key if it was ever pasted into a chat or shared.
 
 ## Always-on and custom domain
 
@@ -75,7 +76,7 @@ https://mva-analytics.onrender.com/#/admin
 ## Notes
 
 - **Free tier sleeps** after ~15 minutes of inactivity; the first request after sleep can take 20–30 seconds. Upgrade to a paid plan for always-on.
-- **Demo data regenerates on every deploy.** Once official data is uploaded, use PostgreSQL (`DATABASE_URL`) plus a persistent volume — the SQLite file inside the container is ephemeral.
+- **Data persistence:** the blueprint provisions a free Postgres database and injects `DATABASE_URL`, so official uploads survive redeploys. If your service was created before this change, add a Postgres database in Render manually and set `DATABASE_URL` in Environment, then redeploy. Without it, the SQLite file inside the container is ephemeral and demo data regenerates.
 - To use your own purchased domain (e.g. `mva.yourschool.in`), add it under Render → *Settings → Custom Domain* and add the CNAME record your registrar asks for. Render issues a new certificate automatically.
 - Alternative host: Railway detects `railway.json`/`Procfile` and uses the same `$PORT` start command, giving `https://mva-analytics.up.railway.app`.
 
