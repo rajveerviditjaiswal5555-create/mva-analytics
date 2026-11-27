@@ -35,5 +35,6 @@ services:
 databases:
   - name: mva-db
     plan: free
+    region: singapore
     databaseName: mva
     user: mva
