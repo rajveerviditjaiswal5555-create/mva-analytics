@@ -289,22 +289,26 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       pivot.rotation.y = basePhase
       system.add(pivot)
 
-      // Small dark provider-style badge with a white monogram.
+      // Colourful textured planet, back to the earlier MVA palette.
       const badgeGeo = new THREE.SphereGeometry(0.39, 28, 28)
-      const badgeMat = new THREE.MeshPhysicalMaterial({
-        color: 0x0e0e13, metalness: 0.75, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.18,
+      const surfaceTex = planetTexture(ACCENTS[i % ACCENTS.length], i + 1)
+      const badgeMat = new THREE.MeshStandardMaterial({
+        map: surfaceTex, color: 0xffffff, roughness: 0.72, metalness: 0.08,
+        emissive: accent.clone().multiplyScalar(0.08),
       })
       const badge = new THREE.Mesh(badgeGeo, badgeMat)
       badge.position.set(spec.radius, 0, 0)
       badge.userData.bodyIndex = bodies.length
       pivot.add(badge)
-      disposables.push(badgeGeo, badgeMat)
+      disposables.push(badgeGeo, badgeMat, surfaceTex)
 
-      // Faint coloured rim, like the small provider accents in OpenRouter's clusters.
-      const rimGeo = new THREE.SphereGeometry(0.45, 20, 20)
-      const rimMat = new THREE.MeshBasicMaterial({ color: accent, transparent: true, opacity: 0.16, side: THREE.BackSide })
-      badge.add(new THREE.Mesh(rimGeo, rimMat))
-      disposables.push(rimGeo, rimMat)
+      // Soft coloured atmosphere so the planets glow against the dark canvas.
+      const atmMat = new THREE.SpriteMaterial({ map: dotTex, color: accent, transparent: true, opacity: 0.28, blending: THREE.AdditiveBlending, depthWrite: false })
+      const atm = new THREE.Sprite(atmMat)
+      atm.scale.set(1.35, 1.35, 1)
+      atm.position.z = -0.1
+      badge.add(atm)
+      disposables.push(atmMat)
 
       // Invisible hover proxy.
       const pickGeo = new THREE.SphereGeometry(0.8, 12, 12)
