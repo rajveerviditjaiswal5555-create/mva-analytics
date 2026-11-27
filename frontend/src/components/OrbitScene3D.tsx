@@ -13,6 +13,8 @@ type Body = {
   label: THREE.Sprite
   swarm: THREE.Points
   moons: THREE.Object3D[]
+  moonSpeeds: number[]
+  moonPhases: number[]
   name: string
   sub: string
   basePhase: number
@@ -302,11 +304,16 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       badge.add(label)
       disposables.push(label.material.map!, label.material)
 
-      // Moons as tiny satellites.
+      // Moons as tiny satellites, each with its own randomized orbit.
       const moons: THREE.Object3D[] = []
+      const moonSpeeds: number[] = []
+      const moonPhases: number[] = []
       for (let j = 0; j < Math.min(data.moons.length, 2); j++) {
         const moonPivot = new THREE.Object3D()
-        moonPivot.rotation.y = j * 2.1
+        const phase = Math.random() * Math.PI * 2
+        moonSpeeds.push((0.6 + Math.random() * 1.8) * (Math.random() > 0.5 ? 1 : -1))
+        moonPhases.push(phase)
+        moonPivot.rotation.y = phase
         badge.add(moonPivot)
         const orbitRadius = 0.9 + j * 0.3
 
@@ -328,7 +335,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       }
 
       bodies.push({
-        pivot, mesh: badge, label, swarm, moons, name: data.name, sub: fullSub,
+        pivot, mesh: badge, label, swarm, moons, moonSpeeds, moonPhases, name: data.name, sub: fullSub,
         basePhase, speed: spec.speed, accent,
       })
     })
@@ -398,7 +405,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         body.pivot.rotation.y = body.basePhase + t * body.speed
         body.swarm.rotation.y = t * 0.22
         body.moons.forEach((moonPivot, j) => {
-          moonPivot.rotation.y = t * (j % 2 ? -2.2 : 2.6) + j * 2.1
+          moonPivot.rotation.y = t * body.moonSpeeds[j] + body.moonPhases[j]
         })
         body.mesh.scale.setScalar(hovered === body ? 1.28 : 1)
       })
