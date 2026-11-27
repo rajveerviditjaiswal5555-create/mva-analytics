@@ -35,6 +35,19 @@ A valid HTTPS certificate is issued automatically, so there is no "Your connecti
 
 5. Log in with a real account you create in the Admin Panel. **Change the default demo passwords before going public.**
 
+## Deploying from the command line
+
+Create `render-deploy.env` in the project root (it is gitignored):
+```
+RENDER_API_KEY=rnd_...
+RENDER_SERVICE_ID=srv_...
+```
+Then run:
+```powershell
+.\scripts\deploy_render.ps1 -Wait
+```
+It triggers a deploy and polls until the service is live. The Render API key is created in Render → Account Settings → API Keys; the service ID is in the dashboard URL (`.../web/srv_XXXX`).
+
 ## Troubleshooting "Blueprint file render.yaml not found on main branch"
 
 This means your GitHub repository does **not** contain `render.yaml`. The file exists in the project folder, but it was never pushed. Check:
