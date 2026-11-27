@@ -17,6 +17,7 @@ database/*.db-shm
 
 # Environment
 .env
+render-deploy.env
 
 # OS / editor
 .DS_Store
