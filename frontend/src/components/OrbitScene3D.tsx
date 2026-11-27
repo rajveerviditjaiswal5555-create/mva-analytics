@@ -309,15 +309,6 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         moonPivot.rotation.y = j * 2.1
         badge.add(moonPivot)
         const orbitRadius = 0.9 + j * 0.3
-        const pathPoints: THREE.Vector3[] = []
-        for (let k = 0; k <= 48; k++) {
-          const a = (k / 48) * Math.PI * 2
-          pathPoints.push(new THREE.Vector3(Math.cos(a) * orbitRadius, 0, Math.sin(a) * orbitRadius))
-        }
-        const pathGeo = new THREE.BufferGeometry().setFromPoints(pathPoints)
-        const pathMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.3 })
-        badge.add(new THREE.LineLoop(pathGeo, pathMat))
-        disposables.push(pathGeo, pathMat)
 
         const mGeo = new THREE.SphereGeometry(0.14 + j * 0.03, 14, 14)
         const mMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
