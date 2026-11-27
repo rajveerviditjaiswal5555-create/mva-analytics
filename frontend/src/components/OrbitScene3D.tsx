@@ -248,7 +248,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       system.add(pivot)
 
       // Small dark provider badge.
-      const badgeGeo = new THREE.SphereGeometry(0.42, 28, 28)
+      const badgeGeo = new THREE.SphereGeometry(0.39, 28, 28)
       const surfaceTex = planetTexture(ACCENTS[i % ACCENTS.length], i + 1)
       const badgeMat = new THREE.MeshStandardMaterial({
         map: surfaceTex, color: 0xffffff, roughness: 0.74, metalness: 0.06,
@@ -326,6 +326,14 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
         moonPivot.add(moon)
         moons.push(moonPivot)
         disposables.push(mGeo, mMat)
+
+        // Fine tether from the planet to its moon, like OpenRouter's connected nodes.
+        const tetherGeo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(0, 0, 0), new THREE.Vector3(orbitRadius, 0, 0),
+        ])
+        const tetherMat = new THREE.LineBasicMaterial({ color: accent, transparent: true, opacity: 0.55 })
+        moonPivot.add(new THREE.Line(tetherGeo, tetherMat))
+        disposables.push(tetherGeo, tetherMat)
       }
 
       bodies.push({
