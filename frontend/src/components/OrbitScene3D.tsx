@@ -47,6 +47,39 @@ function textSprite(text: string, sub = '', color = '#ffffff', width = 320) {
   return sprite
 }
 
+/** Small provider-style monogram badge, e.g. "MP" for Madhya Pradesh. */
+function initialSprite(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  const initials = parts.slice(0, 2).map(p => p[0]).join('').toUpperCase()
+  const c = document.createElement('canvas')
+  c.width = c.height = 128
+  const ctx = c.getContext('2d')!
+  ctx.clearRect(0, 0, 128, 128)
+  ctx.textAlign = 'center'
+  ctx.fillStyle = '#ffffff'
+  ctx.font = `700 ${initials.length > 1 ? 56 : 72}px Inter, Arial, sans-serif`
+  ctx.fillText(initials, 64, 82)
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const material = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })
+  const sprite = new THREE.Sprite(material)
+  sprite.scale.set(0.62, 0.62, 1)
+  sprite.position.z = 0.38
+  return sprite
+}
+
+/** Radial filaments from a node to its dot cloud — OpenRouter's dandelion clusters. */
+function fiberLines(points: Float32Array, color: THREE.Color) {
+  const segments: number[] = []
+  for (let i = 0; i < points.length / 3; i += 3) {
+    segments.push(0, 0, 0, points[i * 3], points[i * 3 + 1], points[i * 3 + 2])
+  }
+  const geo = new THREE.BufferGeometry()
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(segments, 3))
+  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.2 })
+  return { lines: new THREE.LineSegments(geo, mat), geo, mat }
+}
+
 function radialTexture() {
   const c = document.createElement('canvas')
   c.width = c.height = 256
@@ -182,6 +215,31 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     system.add(torus)
     disposables.push(torusGeo, torusMat)
 
+    // Interlocking chrome arm, echoing OpenRouter's metallic logomark.
+    const armShape = new THREE.Shape()
+    armShape.moveTo(1.05, -0.68)
+    armShape.lineTo(3.5, -0.68)
+    armShape.quadraticCurveTo(4.25, -0.68, 4.25, -0.02)
+    armShape.lineTo(4.25, 0.6)
+    armShape.quadraticCurveTo(4.25, 0.98, 3.82, 0.98)
+    armShape.lineTo(1.05, 0.98)
+    armShape.closePath()
+    const armGeo = new THREE.ExtrudeGeometry(armShape, {
+      depth: 0.32, bevelEnabled: true, bevelSize: 0.12, bevelThickness: 0.1, bevelSegments: 3,
+    })
+    const armMat = new THREE.MeshPhysicalMaterial({ color: 0x17171d, metalness: 1, roughness: 0.16, clearcoat: 1 })
+    const arm = new THREE.Mesh(armGeo, armMat)
+    arm.position.z = -0.1
+    system.add(arm)
+    disposables.push(armGeo, armMat)
+
+    const torus2Geo = new THREE.TorusGeometry(1.95, 0.17, 16, 64)
+    const torus2 = new THREE.Mesh(torus2Geo, torusMat)
+    torus2.rotation.y = 0.55
+    torus2.position.z = -0.18
+    system.add(torus2)
+    disposables.push(torus2Geo)
+
     const discGeo = new THREE.CircleGeometry(1.68, 64)
     const discMat = new THREE.MeshBasicMaterial({ color: 0x050506 })
     const disc = new THREE.Mesh(discGeo, discMat)
@@ -195,7 +253,7 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     const logoMat = new THREE.SpriteMaterial({ map: logoTex, transparent: true, depthTest: false })
     const logo = new THREE.Sprite(logoMat)
     logo.scale.set(2.35, 2.8, 1)
-    logo.position.set(0, 0.38, 0.62)
+    logo.position.set(-0.35, 0.38, 0.62)
     system.add(logo)
     disposables.push(logoTex, logoMat)
 
@@ -249,26 +307,26 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       pivot.rotation.y = basePhase
       system.add(pivot)
 
-      // Small dark provider badge.
+      // Small dark provider-style badge with a white monogram.
       const badgeGeo = new THREE.SphereGeometry(0.39, 28, 28)
-      const surfaceTex = planetTexture(ACCENTS[i % ACCENTS.length], i + 1)
-      const badgeMat = new THREE.MeshStandardMaterial({
-        map: surfaceTex, color: 0xffffff, roughness: 0.74, metalness: 0.06,
-        emissive: accent.clone().multiplyScalar(0.06),
+      const badgeMat = new THREE.MeshPhysicalMaterial({
+        color: 0x0e0e13, metalness: 0.75, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.18,
       })
       const badge = new THREE.Mesh(badgeGeo, badgeMat)
       badge.position.set(spec.radius, 0, 0)
       badge.userData.bodyIndex = bodies.length
       pivot.add(badge)
-      disposables.push(badgeGeo, badgeMat, surfaceTex)
+      disposables.push(badgeGeo, badgeMat)
 
-      // Atmospheric halo gives the planet depth against the dark canvas.
-      const atmMat = new THREE.SpriteMaterial({ map: dotTex, color: accent, transparent: true, opacity: 0.3, blending: THREE.AdditiveBlending, depthWrite: false })
-      const atm = new THREE.Sprite(atmMat)
-      atm.scale.set(1.5, 1.5, 1)
-      atm.position.z = -0.12
-      badge.add(atm)
-      disposables.push(atmMat)
+      const monogram = initialSprite(data.name)
+      badge.add(monogram)
+      disposables.push(monogram.material.map!, monogram.material)
+
+      // Faint coloured rim, like the small provider accents in OpenRouter's clusters.
+      const rimGeo = new THREE.SphereGeometry(0.45, 20, 20)
+      const rimMat = new THREE.MeshBasicMaterial({ color: accent, transparent: true, opacity: 0.16, side: THREE.BackSide })
+      badge.add(new THREE.Mesh(rimGeo, rimMat))
+      disposables.push(rimGeo, rimMat)
 
       // Invisible hover proxy.
       const pickGeo = new THREE.SphereGeometry(0.8, 12, 12)
@@ -280,11 +338,12 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       disposables.push(pickGeo, pickMat)
 
       // Dotted constellation swarm around the node — the OpenRouter signature detail.
-      const count = 34 + (i % 3) * 10
+      const count = 45 + (i % 4) * 18
+      const spread = 1.4 + (i % 3) * 0.5
       const swarmPos = new Float32Array(count * 3)
       for (let j = 0; j < count; j++) {
         const a = Math.random() * Math.PI * 2
-        const r = 0.45 + Math.random() * 1.25
+        const r = 0.5 + Math.random() * spread
         swarmPos[j * 3] = Math.cos(a) * r
         swarmPos[j * 3 + 1] = (Math.random() - 0.5) * 0.5
         swarmPos[j * 3 + 2] = Math.sin(a) * r
@@ -295,6 +354,10 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       const swarm = new THREE.Points(swarmGeo, swarmMat)
       badge.add(swarm)
       disposables.push(swarmGeo, swarmMat)
+
+      const fibers = fiberLines(swarmPos, new THREE.Color(0x8a8a98))
+      badge.add(fibers.lines)
+      disposables.push(fibers.geo, fibers.mat)
 
       const fullSub = `${data.sub}${data.moons.length ? ` · ${data.moons.join(', ')}` : ''}`
       const label = textSprite(data.name, fullSub, '#ffffff')
