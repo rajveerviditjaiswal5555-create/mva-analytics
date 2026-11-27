@@ -12,10 +12,10 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
     envVars:
+      # Set the Postgres EXTERNAL connection URL here in Render (never in Git).
+      # If unset, the app falls back to SQLite inside the container.
       - key: DATABASE_URL
-        fromDatabase:
-          name: mva-db
-          property: connectionString
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       # AI assistant key — set the real value in Render dashboard (not in Git).
