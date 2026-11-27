@@ -7,6 +7,9 @@
 # --- Stage 1: build frontend ------------------------------------------------
 FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
+# Changing BUILD_ID invalidates the cached frontend layer so deploys pick up UI changes.
+ARG BUILD_ID=20261127b
+RUN echo $BUILD_ID > /tmp/mva-build-id
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY frontend/ ./
