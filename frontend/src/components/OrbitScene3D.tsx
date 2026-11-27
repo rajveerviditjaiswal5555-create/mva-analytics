@@ -215,24 +215,6 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     system.add(torus)
     disposables.push(torusGeo, torusMat)
 
-    // Interlocking chrome arm, echoing OpenRouter's metallic logomark.
-    const armShape = new THREE.Shape()
-    armShape.moveTo(1.05, -0.68)
-    armShape.lineTo(3.5, -0.68)
-    armShape.quadraticCurveTo(4.25, -0.68, 4.25, -0.02)
-    armShape.lineTo(4.25, 0.6)
-    armShape.quadraticCurveTo(4.25, 0.98, 3.82, 0.98)
-    armShape.lineTo(1.05, 0.98)
-    armShape.closePath()
-    const armGeo = new THREE.ExtrudeGeometry(armShape, {
-      depth: 0.32, bevelEnabled: true, bevelSize: 0.12, bevelThickness: 0.1, bevelSegments: 3,
-    })
-    const armMat = new THREE.MeshPhysicalMaterial({ color: 0x17171d, metalness: 1, roughness: 0.16, clearcoat: 1 })
-    const arm = new THREE.Mesh(armGeo, armMat)
-    arm.position.z = -0.1
-    system.add(arm)
-    disposables.push(armGeo, armMat)
-
     const torus2Geo = new THREE.TorusGeometry(1.95, 0.17, 16, 64)
     const torus2 = new THREE.Mesh(torus2Geo, torusMat)
     torus2.rotation.y = 0.55
@@ -252,8 +234,8 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
     logoTex.colorSpace = THREE.SRGBColorSpace
     const logoMat = new THREE.SpriteMaterial({ map: logoTex, transparent: true, depthTest: false })
     const logo = new THREE.Sprite(logoMat)
-    logo.scale.set(2.35, 2.8, 1)
-    logo.position.set(-0.35, 0.38, 0.62)
+    logo.scale.set(2.8, 3.35, 1)
+    logo.position.set(0, 0.15, 0.62)
     system.add(logo)
     disposables.push(logoTex, logoMat)
 
@@ -317,10 +299,6 @@ export default function OrbitScene3D({ onSelect, stats, orbitBodies }: Props) {
       badge.userData.bodyIndex = bodies.length
       pivot.add(badge)
       disposables.push(badgeGeo, badgeMat)
-
-      const monogram = initialSprite(data.name)
-      badge.add(monogram)
-      disposables.push(monogram.material.map!, monogram.material)
 
       // Faint coloured rim, like the small provider accents in OpenRouter's clusters.
       const rimGeo = new THREE.SphereGeometry(0.45, 20, 20)
