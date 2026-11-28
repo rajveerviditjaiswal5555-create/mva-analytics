@@ -56,6 +56,6 @@ ALLOWED_ORIGINS = [o.strip() for o in getenv("ALLOWED_ORIGINS", _DEFAULT_ORIGINS
 MAX_UPLOAD_MB = int(getenv("MAX_UPLOAD_MB", "25"))
 
 # AI assistant (server-side only — never exposed to the browser).
-AI_API_KEY = getenv("AI_API_KEY", "")
+AI_API_KEY = getenv("AI_API_KEY", "") or getenv("GROQ_API_KEY", "")
 AI_BASE_URL = getenv("AI_BASE_URL", "https://api.groq.com/openai/v1")
 AI_MODEL = getenv("AI_MODEL", "qwen/qwen3.8-27b")

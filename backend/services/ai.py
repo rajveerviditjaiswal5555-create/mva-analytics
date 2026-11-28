@@ -3,10 +3,7 @@ OpenAI-compatible chat API server-side. The API key never reaches the browser.
 """
 from __future__ import annotations
 
-import json
-import urllib.error
-import urllib.request
-
+from groq import Groq
 from sqlalchemy.orm import Session
 
 from ..config import AI_API_KEY, AI_BASE_URL, AI_MODEL
@@ -99,30 +96,14 @@ def ask(message: str, filters: dict, db: Session, history: list[dict] | None = N
             messages.append({"role": item["role"], "content": item["content"][:1000]})
     messages.append({"role": "user", "content": message[:2000]})
 
-    payload = json.dumps({
-        "model": AI_MODEL,
-        "messages": messages,
-        "temperature": 0.2,
-        "max_tokens": 600,
-    }).encode()
-
-    req = urllib.request.Request(
-        f"{AI_BASE_URL.rstrip('/')}/chat/completions",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {AI_API_KEY}",
-            "User-Agent": "MVA-Analytics/1.0",
-        },
-        method="POST",
-    )
     try:
-        with urllib.request.urlopen(req, timeout=40) as response:
-            body = json.loads(response.read())
-        answer = body["choices"][0]["message"]["content"].strip()
+        client = Groq(api_key=AI_API_KEY, base_url=AI_BASE_URL)
+        kwargs = {"model": AI_MODEL, "messages": messages, "temperature": 0.2}
+        try:
+            completion = client.chat.completions.create(max_completion_tokens=600, **kwargs)
+        except TypeError:
+            completion = client.chat.completions.create(max_tokens=600, **kwargs)
+        answer = (completion.choices[0].message.content or "").strip()
         return {"answer": answer, "suggested": SUGGESTED, "available": True}
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode(errors="replace")[:200]
-        return {"answer": f"The AI service returned an error ({exc.code}). {detail}", "suggested": SUGGESTED, "available": False}
     except Exception as exc:
         return {"answer": f"Unable to reach the AI service right now. {exc}", "suggested": SUGGESTED, "available": False}
